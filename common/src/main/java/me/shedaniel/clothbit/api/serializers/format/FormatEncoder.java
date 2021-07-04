@@ -19,8 +19,9 @@
 
 package me.shedaniel.clothbit.api.serializers.format;
 
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 
 public interface FormatEncoder<W> {
-    <T> ValueWriter writer(W writer, FormatFlag... flags);
+    <T> ValueWriter writer(W writer, OptionTypesContext ctx, FormatFlag... flags);
 }

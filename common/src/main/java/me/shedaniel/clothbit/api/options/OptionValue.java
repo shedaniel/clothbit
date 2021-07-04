@@ -19,7 +19,7 @@
 
 package me.shedaniel.clothbit.api.options;
 
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.impl.options.OptionValueImpl;
 import org.jetbrains.annotations.ApiStatus;
 

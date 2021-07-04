@@ -22,8 +22,8 @@ package me.shedaniel.clothbit.api.options.type.simple;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.serializers.ReadType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -68,6 +68,16 @@ public class AnyOptionType implements OptionType<Object> {
         if (peek.isNull()) return reader.readNull();
         if (peek.isString()) return reader.readString();
         throw new IllegalStateException("Reading unknown type: " + peek);
+    }
+    
+    @Override
+    public Object copy(Object value, OptionTypesContext ctx) {
+        OptionType<Object> type = ctx.resolveType((Class<Object>) value.getClass());
+        if (type instanceof AnyOptionType) {
+            throw new IllegalStateException("Can not resolve option type for " + value);
+        } else {
+            return type.copy(value, ctx);
+        }
     }
     
     private Map<String, Object> readMap(ValueReader reader) {

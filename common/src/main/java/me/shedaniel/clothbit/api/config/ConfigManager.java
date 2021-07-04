@@ -19,9 +19,12 @@
 
 package me.shedaniel.clothbit.api.config;
 
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.impl.config.ConfigManagerImpl;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.screens.Screen;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.NonExtendable
@@ -40,14 +43,19 @@ public interface ConfigManager<T> {
     
     T get();
     
+    @Environment(EnvType.CLIENT)
+    Screen getOptionsScreen(Screen parent);
+    
     @ApiStatus.NonExtendable
     interface Properties<T> {
-        static <T> Properties<T> of() {
-            return new ConfigManagerImpl.PropertiesImpl<>();
+        static <T> Properties<T> of(String id) {
+            return new ConfigManagerImpl.PropertiesImpl<>(id);
         }
         
         Properties<T> adapter(OptionTypeAdapter adapter);
-        
+    
+        String getId();
+    
         OptionTypesContext getConstructingContext();
     }
 }

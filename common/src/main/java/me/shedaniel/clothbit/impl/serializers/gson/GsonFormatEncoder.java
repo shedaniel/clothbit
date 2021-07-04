@@ -22,8 +22,9 @@ package me.shedaniel.clothbit.impl.serializers.gson;
 import com.google.common.base.MoreObjects;
 import com.google.gson.stream.JsonWriter;
 import me.shedaniel.clothbit.api.options.Option;
-import me.shedaniel.clothbit.api.serializers.OptionWriter;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.api.serializers.format.FormatEncoder;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.api.serializers.format.flags.IndentFlag;
@@ -38,7 +39,7 @@ import static me.shedaniel.clothbit.impl.utils.EscapingUtils.call;
 
 public class GsonFormatEncoder implements FormatEncoder<Writer> {
     @Override
-    public <T> ValueWriter writer(Writer writer, FormatFlag... flags) {
+    public <T> ValueWriter writer(Writer writer, OptionTypesContext ctx, FormatFlag... flags) {
         BufferedWriter bufferedWriter = writer instanceof BufferedWriter ? (BufferedWriter) writer
                 : new BufferedWriter(writer);
         JsonWriter jsonWriter = new JsonWriter(bufferedWriter);

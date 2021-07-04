@@ -19,10 +19,10 @@
 
 package me.shedaniel.clothbit.api.options.type;
 
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class DelegatingOptionType<T> implements OptionType<T> {
@@ -40,6 +40,11 @@ public abstract class DelegatingOptionType<T> implements OptionType<T> {
     @Override
     public T read(ValueReader reader) {
         return this.parent.read(reader);
+    }
+    
+    @Override
+    public T copy(T value, OptionTypesContext ctx) {
+        return this.parent.copy(value, ctx);
     }
     
     @Override

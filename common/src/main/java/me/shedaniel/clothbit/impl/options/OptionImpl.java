@@ -31,12 +31,12 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class OptionImpl<T> implements Option<T> {
-    private final Map<OptionProperty<?>, ?> properties;
+    private final Map<OptionProperty<?>, Object> properties;
     private final OptionType<T> type;
     private final String name;
     private final Supplier<T> defaultValue;
     
-    public OptionImpl(Map<OptionProperty<?>, ?> properties, OptionType<T> type, String name, Supplier<T> defaultValue) {
+    public OptionImpl(Map<OptionProperty<?>, Object> properties, OptionType<T> type, String name, Supplier<T> defaultValue) {
         this.properties = properties;
         this.type = type;
         this.name = name;
@@ -64,7 +64,7 @@ public class OptionImpl<T> implements Option<T> {
     
     @Override
     public <S> S getProperty(OptionProperty<S> property) {
-        return (S) properties.get(property);
+        return (S) properties.getOrDefault(property, property.getDefaultValue());
     }
     
     public static class Builder<T> implements Option.Builder<T> {

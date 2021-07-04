@@ -22,10 +22,10 @@ package me.shedaniel.clothbit.api.options.type.adapter.reflect;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.datafixers.util.Pair;
 import me.shedaniel.clothbit.api.annotations.*;
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.type.extended.MapOptionType;
 
 import java.lang.reflect.Constructor;
@@ -60,8 +60,11 @@ public class ReflectOptionTypeAdapter implements OptionTypeAdapter {
                         }
                     }
                     Option.Builder<R> option = (Option.Builder<R>) optionType.toOption(name);
-                    if (field.getAnnotation(AllowNulls.class) != null) {
-                        option.nullable(true);
+                    {
+                        AllowNulls allowNulls = field.getAnnotation(AllowNulls.class);
+                        if (allowNulls != null) {
+                            option.nullable(allowNulls.value());
+                        }
                     }
                     {
                         Comments comments = field.getAnnotation(Comments.class);

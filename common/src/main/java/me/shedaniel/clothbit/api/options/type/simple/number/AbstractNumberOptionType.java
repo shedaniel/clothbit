@@ -19,9 +19,9 @@
 
 package me.shedaniel.clothbit.api.options.type.simple.number;
 
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 
 public interface AbstractNumberOptionType<T extends Number> extends OptionType<T> {
     @Override
@@ -31,5 +31,10 @@ public interface AbstractNumberOptionType<T extends Number> extends OptionType<T
         } else {
             writer.writeNumber(value);
         }
+    }
+    
+    @Override
+    default T copy(T value, OptionTypesContext ctx) {
+        return value;
     }
 }

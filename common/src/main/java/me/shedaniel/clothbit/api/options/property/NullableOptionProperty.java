@@ -24,23 +24,29 @@ import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionProperty;
 import org.jetbrains.annotations.Nullable;
 
-public class NullableOptionProperty implements OptionProperty<Boolean> {
+public class NullableOptionProperty implements OptionProperty<NullableOptionProperty.HandleMode> {
     private static final NullableOptionProperty INSTANCE = new NullableOptionProperty();
     
     private NullableOptionProperty() {}
     
-    public static OptionProperty<Boolean> property() {
+    public static OptionProperty<HandleMode> property() {
         return INSTANCE;
     }
     
     @Override
     @Nullable
-    public Boolean getDefaultValue() {
-        return Boolean.FALSE;
+    public HandleMode getDefaultValue() {
+        return HandleMode.ALLOW_NULL;
     }
     
     @Override
-    public void validatePropertyValue(Option<?> option, Boolean value) {
-        Preconditions.checkNotNull(value, "Property 'NullableOptionProperty' does not accept nullable booleans!");
+    public void validatePropertyValue(Option<?> option, HandleMode value) {
+        Preconditions.checkNotNull(value, "Property 'NullableOptionProperty' does not accept nullable handle modes!");
+    }
+    
+    public enum HandleMode {
+        ALLOW_NULL,
+        FILL_DEFAULT,
+        DENY_NULL,
     }
 }

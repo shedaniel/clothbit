@@ -19,11 +19,11 @@
 
 package me.shedaniel.clothbit.api.options.type.extended;
 
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -69,6 +69,20 @@ public class MapOptionType implements OptionType<Map<String, ?>> {
             }
         }
         return value;
+    }
+    
+    @Override
+    public Map<String, ?> copy(Map<String, ?> value, OptionTypesContext ctx) {
+        Map<String, Object> newValue = new HashMap<>();
+        for (Map.Entry<String, ?> entry : value.entrySet()) {
+            Option<?> option = optionsByName.get(entry.getKey());
+            if (option != null) {
+                newValue.put(entry.getKey(), ((OptionType<Object>) option.getType()).copy(entry.getValue(), ctx));
+            } else {
+                newValue.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return newValue;
     }
     
     @Override

@@ -25,7 +25,7 @@ import java.util.Arrays;
 
 public class ExampleConfig {
     public static void initialize() {
-        ConfigManager<ExampleConfigObject> manager = ConfigManager.register(ExampleConfigObject.class, ConfigManager.Properties.of());
+        ConfigManager<ExampleConfigObject> manager = ConfigManager.register(ExampleConfigObject.class, ConfigManager.Properties.of("clothbit.example"));
         System.out.println(Arrays.toString(manager.get().bool));
     }
 }

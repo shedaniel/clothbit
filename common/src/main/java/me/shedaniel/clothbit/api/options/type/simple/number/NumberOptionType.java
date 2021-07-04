@@ -19,7 +19,8 @@
 
 package me.shedaniel.clothbit.api.options.type.simple.number;
 
-import me.shedaniel.clothbit.api.serializers.ValueReader;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
@@ -34,6 +35,11 @@ public class NumberOptionType<T extends Number> implements AbstractNumberOptionT
     @Override
     public T read(ValueReader reader) {
         return converter.apply(reader.readNumber());
+    }
+    
+    @Override
+    public T copy(T value, OptionTypesContext ctx) {
+        return converter.apply(value.doubleValue());
     }
     
     @Override

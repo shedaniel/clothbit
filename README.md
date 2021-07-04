@@ -13,18 +13,22 @@ A custom JSON5 serializer will be written for this.
 - Json5
 
 # Simple Types
-- String
+- Byte
+- Short
+- Double
+- Float
 - Int
 - Long
-- Float
-- Double
+- BigInteger
+- BigDecimal
 - Boolean
+- Character
+- String
 
 # Extended Types
 - Identifier
 - Instant (Time Selector)
-- Code Point
-- Color (Color Picker)
+- Tag
 - Text (Rich Text Editor)
 - Enum<?>
 

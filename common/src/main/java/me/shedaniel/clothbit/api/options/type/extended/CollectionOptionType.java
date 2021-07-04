@@ -19,10 +19,10 @@
 
 package me.shedaniel.clothbit.api.options.type.extended;
 
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -56,6 +56,15 @@ public class CollectionOptionType<T> implements OptionType<Collection<T>> {
             values.add(this.parent.read(arrayReader));
         });
         return values;
+    }
+    
+    @Override
+    public Collection<T> copy(Collection<T> values, OptionTypesContext ctx) {
+        List<T> newValues = new ArrayList<>();
+        for (T value : values) {
+            newValues.add(this.parent.copy(value, ctx));
+        }
+        return newValues;
     }
     
     @Override

@@ -19,8 +19,9 @@
 
 package me.shedaniel.clothbit.api.serializers.format;
 
-import me.shedaniel.clothbit.api.serializers.ValueReader;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 
 public interface FormatDecoder<R> {
-    <T> ValueReader reader(R reader, FormatFlag... flags);
+    <T> ValueReader reader(R reader, OptionTypesContext ctx, FormatFlag... flags);
 }

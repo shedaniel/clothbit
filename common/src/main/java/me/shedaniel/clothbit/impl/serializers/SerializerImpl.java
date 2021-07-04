@@ -19,11 +19,13 @@
 
 package me.shedaniel.clothbit.impl.serializers;
 
-import me.shedaniel.clothbit.api.serializers.*;
-import me.shedaniel.clothbit.api.serializers.format.Serializer;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.format.FormatDecoder;
-import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.api.serializers.format.FormatEncoder;
+import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
+import me.shedaniel.clothbit.api.serializers.format.Serializer;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +38,7 @@ public class SerializerImpl<W, R> implements Serializer<W, R> {
     private List<FormatFlag> flags = new ArrayList<>();
     
     public SerializerImpl(FormatEncoder<W> encoder, FormatDecoder<R> decoder) {
-        this.encoder = Objects.requireNonNull(encoder);
+        this.encoder = new NullSafetyFormatEncoder<>(Objects.requireNonNull(encoder));
         this.decoder = Objects.requireNonNull(decoder);
     }
     
@@ -47,12 +49,12 @@ public class SerializerImpl<W, R> implements Serializer<W, R> {
     }
     
     @Override
-    public <T> ValueWriter writer(W writer) {
-        return this.encoder.writer(writer, this.flags.toArray(new FormatFlag[0]));
+    public <T> ValueWriter writer(W writer, OptionTypesContext ctx) {
+        return this.encoder.writer(writer, ctx, this.flags.toArray(new FormatFlag[0]));
     }
     
     @Override
-    public <T> ValueReader reader(R reader) {
-        return this.decoder.reader(reader, this.flags.toArray(new FormatFlag[0]));
+    public <T> ValueReader reader(R reader, OptionTypesContext ctx) {
+        return this.decoder.reader(reader, ctx, this.flags.toArray(new FormatFlag[0]));
     }
 }

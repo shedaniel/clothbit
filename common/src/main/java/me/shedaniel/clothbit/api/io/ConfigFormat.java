@@ -36,5 +36,5 @@ public interface ConfigFormat {
     
     <T> void writeTo(OptionValue<T> value, Path path, OptionTypesContext ctx);
     
-    <T> T readFrom(OptionType<T> type, Path path);
+    <T> T readFrom(OptionType<T> type, Path path, OptionTypesContext ctx);
 }

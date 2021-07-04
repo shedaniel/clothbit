@@ -20,12 +20,16 @@
 package me.shedaniel.clothbit.impl.config;
 
 import me.shedaniel.clothbit.api.annotations.Config;
+import me.shedaniel.clothbit.api.client.gui.OptionsScreen;
 import me.shedaniel.clothbit.api.config.ConfigManager;
 import me.shedaniel.clothbit.api.io.ConfigFormat;
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.impl.utils.ConfigFolderImpl;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.screens.Screen;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -36,6 +40,7 @@ import java.util.Objects;
 public class ConfigManagerImpl<T> implements ConfigManager<T> {
     private static final Map<Class<?>, ConfigManagerImpl<?>> INSTANCES = new HashMap<>();
     private final Class<T> type;
+    private final String id;
     private final Config configAnnotation;
     private final ConfigFormat format;
     private final OptionType<T> optionType;
@@ -44,6 +49,7 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     
     public ConfigManagerImpl(Class<T> type, Properties<T> properties) {
         this.type = type;
+        this.id = properties.getId();
         this.configAnnotation = Objects.requireNonNull(type.getAnnotation(Config.class),
                 "Expected @Config annotation on " + type);
         try {
@@ -71,7 +77,7 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     
     @Override
     public void load() {
-        this.value = this.format.readFrom(this.optionType, getPath());
+        this.value = this.format.readFrom(this.optionType, getPath(), this.optionTypesContext);
     }
     
     @Override
@@ -84,13 +90,31 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
         return this.value;
     }
     
+    @Override
+    @Environment(EnvType.CLIENT)
+    public Screen getOptionsScreen(Screen parent) {
+        OptionsScreen screen = OptionsScreen.of(parent, id, optionTypesContext);
+        screen.add(this.optionType.withValue(value));
+        return screen.get();
+    }
+    
     public static class PropertiesImpl<T> implements Properties<T> {
+        private final String id;
         private final OptionTypesContext optionTypesContext = OptionTypesContext.defaultContext();
+        
+        public PropertiesImpl(String id) {
+            this.id = id;
+        }
         
         @Override
         public Properties<T> adapter(OptionTypeAdapter adapter) {
             this.optionTypesContext.addAdapter(adapter);
             return this;
+        }
+        
+        @Override
+        public String getId() {
+            return id;
         }
         
         @Override

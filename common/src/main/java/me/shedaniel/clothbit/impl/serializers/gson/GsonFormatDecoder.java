@@ -22,8 +22,9 @@ package me.shedaniel.clothbit.impl.serializers.gson;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.ReadType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.format.FormatDecoder;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.impl.utils.EscapingUtils.Task;
@@ -39,7 +40,7 @@ import static me.shedaniel.clothbit.impl.utils.EscapingUtils.call;
 
 public class GsonFormatDecoder implements FormatDecoder<Reader> {
     @Override
-    public <T> ValueReader reader(Reader reader, FormatFlag... flags) {
+    public <T> ValueReader reader(Reader reader, OptionTypesContext ctx, FormatFlag... flags) {
         BufferedReader bufferedReader = reader instanceof BufferedReader ? (BufferedReader) reader
                 : new BufferedReader(reader);
         JsonReader jsonReader = new JsonReader(bufferedReader);

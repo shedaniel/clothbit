@@ -23,13 +23,13 @@ import com.google.gson.JsonElement;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionValue;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.impl.serializers.SerializerImpl;
 import me.shedaniel.clothbit.impl.serializers.gson.GsonFormatDecoder;
 import me.shedaniel.clothbit.impl.serializers.gson.GsonFormatEncoder;
-import me.shedaniel.clothbit.impl.serializers.gson.element.GsonElementFormatDecoder;
-import me.shedaniel.clothbit.impl.serializers.gson.element.GsonElementFormatEncoder;
+import me.shedaniel.clothbit.impl.serializers.gson.GsonElementFormatDecoder;
+import me.shedaniel.clothbit.impl.serializers.gson.GsonElementFormatEncoder;
 import me.shedaniel.clothbit.impl.serializers.json5.Json5FormatEncoder;
 import me.shedaniel.clothbit.impl.serializers.packet.PacketFormatDecoder;
 import me.shedaniel.clothbit.impl.serializers.packet.PacketFormatEncoder;
@@ -81,16 +81,16 @@ public interface Serializer<W, R> {
     
     static <T> String serializeString(Serializer<Writer, ?> serializer, OptionTypesContext ctx, OptionValue<T> value) {
         StringWriter stringWriter = new StringWriter();
-        try (ValueWriter writer = serializer.writer(stringWriter)) {
+        try (ValueWriter writer = serializer.writer(stringWriter, ctx)) {
             value.write(writer, ctx);
         }
         return stringWriter.toString();
     }
     
-    static <T> T deserializeString(Serializer<?, Reader> serializer, OptionType<T> type, String string) {
+    static <T> T deserializeString(Serializer<?, Reader> serializer, OptionTypesContext ctx, OptionType<T> type, String string) {
         StringReader stringReader = new StringReader(string);
         T value;
-        try (ValueReader reader = serializer.reader(stringReader)) {
+        try (ValueReader reader = serializer.reader(stringReader, ctx)) {
             value = type.read(reader);
         }
         return value;
@@ -98,15 +98,15 @@ public interface Serializer<W, R> {
     
     static <A, T> A serializeTo(Serializer<Consumer<A>, ?> serializer, OptionTypesContext ctx, OptionValue<T> value) {
         AtomicReference<A> ref = new AtomicReference<>();
-        try (ValueWriter writer = serializer.writer(ref::set)) {
+        try (ValueWriter writer = serializer.writer(ref::set, ctx)) {
             value.write(writer, ctx);
         }
         return ref.get();
     }
     
-    static <A, T> T deserializeTo(Serializer<?, A> serializer, OptionType<T> type, A data) {
+    static <A, T> T deserializeTo(Serializer<?, A> serializer, OptionTypesContext ctx, OptionType<T> type, A data) {
         T value;
-        try (ValueReader reader = serializer.reader(data)) {
+        try (ValueReader reader = serializer.reader(data, ctx)) {
             value = type.read(reader);
         }
         return value;
@@ -114,7 +114,7 @@ public interface Serializer<W, R> {
     
     Serializer<W, R> flag(FormatFlag... flags);
     
-    <T> ValueWriter writer(W writer);
+    <T> ValueWriter writer(W writer, OptionTypesContext ctx);
     
-    <T> ValueReader reader(R reader);
+    <T> ValueReader reader(R reader, OptionTypesContext ctx);
 }

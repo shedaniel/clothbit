@@ -11,19 +11,21 @@ architectury {
     fabric()
 }
 
+repositories {
+    maven { url "https://maven.terraformersmc.com/releases/" }
+}
+
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    modApi("com.terraformersmc:modmenu:1.16.9") { transitive false }
+    modCompileOnly "me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}"
+    modRuntime "me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}"
+    shadowCommon "me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}"
 
-    implementation(project(path: ":common")) {
-        transitive = false
-    }
-    developmentFabric(project(path: ":common")) {
-        transitive = false
-    }
-    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) {
-        transitive = false
-    }
+    implementation(project(path: ":common")) { transitive false }
+    developmentFabric(project(path: ":common")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 }
 
 processResources {
@@ -35,6 +37,7 @@ processResources {
 }
 
 shadowJar {
+    relocate "me.shedaniel.math", "me.shedaniel.clothbit.impl.math"
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"
 }
@@ -67,9 +70,9 @@ publishing {
             artifact(remapJar) {
                 classifier null
             }
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
+//            artifact(sourcesJar) {
+//                builtBy remapSourcesJar
+//            }
         }
     }
 

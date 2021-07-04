@@ -24,7 +24,9 @@ import me.shedaniel.clothbit.api.config.formats.GsonConfigFormatResolver;
 
 @Config(name = "bruh.json", format = GsonConfigFormatResolver.class)
 public class ExampleConfigObject {
+    public boolean apkjdwa = false;
     public int age = 10;
+    public String thing;
     public boolean[] bool = new boolean[]{false, true};
     public Object[] yes = new Object[]{false, true};
 }

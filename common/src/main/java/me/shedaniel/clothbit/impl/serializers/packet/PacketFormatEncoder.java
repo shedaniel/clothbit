@@ -19,14 +19,15 @@
 
 package me.shedaniel.clothbit.impl.serializers.packet;
 
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.api.serializers.format.FormatEncoder;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class PacketFormatEncoder implements FormatEncoder<FriendlyByteBuf> {
     @Override
-    public <T> ValueWriter writer(FriendlyByteBuf writer, FormatFlag... flags) {
+    public <T> ValueWriter writer(FriendlyByteBuf writer, OptionTypesContext ctx, FormatFlag... flags) {
         // TODO
         return null;
     }

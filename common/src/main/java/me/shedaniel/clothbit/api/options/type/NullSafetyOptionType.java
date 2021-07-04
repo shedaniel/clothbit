@@ -19,10 +19,10 @@
 
 package me.shedaniel.clothbit.api.options.type;
 
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 
 public class NullSafetyOptionType<T> extends DelegatingOptionType<T> {
     public NullSafetyOptionType(OptionType<T> parent) {
@@ -32,9 +32,6 @@ public class NullSafetyOptionType<T> extends DelegatingOptionType<T> {
     @Override
     public void write(T value, ValueWriter writer, OptionTypesContext ctx) {
         if (value == null) {
-//            if (!option.getOption().isNullable()) {
-//                throw new NullPointerException("Option " + option + " is not marked as nullable but a nullable value is received!");
-//            }
             if (!isNullable()) {
                 throw new NullPointerException("Option Type " + parent + " is not nullable but a nullable value is received!");
             }

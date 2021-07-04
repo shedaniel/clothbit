@@ -17,12 +17,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.impl.serializers.gson.element;
+package me.shedaniel.clothbit.impl.serializers.gson;
 
 import com.google.gson.*;
 import me.shedaniel.clothbit.api.options.Option;
-import me.shedaniel.clothbit.api.serializers.OptionWriter;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.api.serializers.format.FormatEncoder;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 
@@ -30,7 +31,7 @@ import java.util.function.Consumer;
 
 public class GsonElementFormatEncoder implements FormatEncoder<Consumer<JsonElement>> {
     @Override
-    public <T> ValueWriter writer(Consumer<JsonElement> writer, FormatFlag... flags) {
+    public <T> ValueWriter writer(Consumer<JsonElement> writer, OptionTypesContext ctx, FormatFlag... flags) {
         return new RootGsonElementValueWriter() {
             @Override
             public void close() {

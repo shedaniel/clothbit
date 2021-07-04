@@ -25,11 +25,11 @@ import com.google.gson.JsonElement;
 import me.shedaniel.clothbit.api.annotations.Comment;
 import me.shedaniel.clothbit.api.annotations.FieldName;
 import me.shedaniel.clothbit.api.annotations.IgnoreField;
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.type.extended.MapOptionType;
-import me.shedaniel.clothbit.api.serializers.format.Serializer;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
+import me.shedaniel.clothbit.api.serializers.format.Serializer;
 
 import java.io.Reader;
 import java.io.Writer;
@@ -76,7 +76,7 @@ public class TestOptions {
             System.out.println(Serializer.serializeString(serializer, optionTypesContext, type.withValue(new Apple())));
             JsonElement json = Serializer.serializeTo(Serializer.gsonElement(), optionTypesContext, type.withValue(new Apple()));
             json.getAsJsonObject().addProperty("age", 1234);
-            Apple newApple = Serializer.deserializeTo(Serializer.gsonElement(), type, json);
+            Apple newApple = Serializer.deserializeTo(Serializer.gsonElement(), optionTypesContext, type, json);
             System.out.println("adw");
         }
         {
@@ -95,7 +95,7 @@ public class TestOptions {
             Serializer<Writer, Reader> serializer = Serializer.gson()
                     .flag(FormatFlag.indent("    "));
             OptionType<Apple> type = optionTypesContext.resolveType(Apple.class);
-            Apple apple = Serializer.deserializeString(serializer, type, data);
+            Apple apple = Serializer.deserializeString(serializer, optionTypesContext, type, data);
             System.out.println();
         }
     }

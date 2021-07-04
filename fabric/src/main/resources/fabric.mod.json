@@ -11,6 +11,9 @@
   "entrypoints": {
     "main": [
       "me.shedaniel.clothbit.impl.example.fabric.ExampleConfigImpl"
+    ],
+    "modmenu": [
+      "me.shedaniel.clothbit.impl.example.fabric.ExampleConfigImplModMenu"
     ]
   },
   "depends": {

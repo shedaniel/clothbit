@@ -17,7 +17,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.api.serializers;
+package me.shedaniel.clothbit.api.serializers.writer;
 
 import me.shedaniel.clothbit.api.options.Option;
 

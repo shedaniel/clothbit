@@ -23,7 +23,7 @@ import me.shedaniel.clothbit.api.io.ConfigFormat;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionValue;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.format.Serializer;
 
 import java.io.IOException;
@@ -62,12 +62,12 @@ public class WriterReaderConfigFormatImpl implements ConfigFormat {
     }
     
     @Override
-    public <T> T readFrom(OptionType<T> type, Path path) {
+    public <T> T readFrom(OptionType<T> type, Path path, OptionTypesContext ctx) {
         try {
             ensureParent(path);
             if (Files.notExists(path)) return type.getDefaultValue();
             T value;
-            try (ValueReader reader = serializer.reader(Files.newBufferedReader(path))) {
+            try (ValueReader reader = serializer.reader(Files.newBufferedReader(path), ctx)) {
                 value = type.read(reader);
             } catch (Exception e) {
                 new RuntimeException("Failed to load config " + type + " from " + path + ", applying default options!", e).printStackTrace();

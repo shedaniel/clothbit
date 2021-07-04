@@ -19,14 +19,15 @@
 
 package me.shedaniel.clothbit.impl.serializers.packet;
 
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.api.serializers.format.FormatDecoder;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class PacketFormatDecoder implements FormatDecoder<FriendlyByteBuf> {
     @Override
-    public <T> ValueReader reader(FriendlyByteBuf reader, FormatFlag... flags) {
+    public <T> ValueReader reader(FriendlyByteBuf reader, OptionTypesContext ctx, FormatFlag... flags) {
         // TODO
         return null;
     }

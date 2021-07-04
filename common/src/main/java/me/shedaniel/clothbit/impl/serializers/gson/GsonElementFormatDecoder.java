@@ -17,13 +17,14 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.impl.serializers.gson.element;
+package me.shedaniel.clothbit.impl.serializers.gson;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.ReadType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.format.FormatDecoder;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +35,7 @@ import java.util.function.Consumer;
 
 public class GsonElementFormatDecoder implements FormatDecoder<JsonElement> {
     @Override
-    public <T> ValueReader reader(JsonElement reader, FormatFlag... flags) {
+    public <T> ValueReader reader(JsonElement reader, OptionTypesContext ctx, FormatFlag... flags) {
         return new RootGsonElementValueReader(reader);
     }
     

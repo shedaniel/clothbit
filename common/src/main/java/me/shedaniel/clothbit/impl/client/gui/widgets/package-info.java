@@ -17,42 +17,7 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.api.serializers;
+@ApiStatus.Internal
+package me.shedaniel.clothbit.impl.client.gui.widgets;
 
-import org.jetbrains.annotations.Nullable;
-
-import java.io.Closeable;
-import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-
-public interface ValueReader extends Closeable {
-    @Nullable <T> T readNull();
-    
-    String readString();
-    
-    boolean readBoolean();
-    
-    char readCharacter();
-    
-    byte readByte();
-    
-    short readShort();
-    
-    int readInt();
-    
-    long readLong();
-    
-    float readFloat();
-    
-    double readDouble();
-    Number readNumber();
-    
-    void readObject(BiPredicate<String, ValueReader> consumer);
-    
-    void readArray(Consumer<ValueReader> consumer);
-    
-    ReadType peek();
-    
-    @Override
-    void close();
-}
+import org.jetbrains.annotations.ApiStatus;

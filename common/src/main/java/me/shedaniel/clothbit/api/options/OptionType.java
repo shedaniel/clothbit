@@ -19,8 +19,8 @@
 
 package me.shedaniel.clothbit.api.options;
 
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
@@ -34,6 +34,8 @@ public interface OptionType<T> {
     void write(T value, ValueWriter writer, OptionTypesContext ctx);
     
     T read(ValueReader reader);
+    
+    T copy(T value, OptionTypesContext ctx);
     
     boolean isNullable();
     
@@ -53,18 +55,27 @@ public interface OptionType<T> {
         return new OptionType<R>() {
             @Override
             public void write(R value, ValueWriter writer, OptionTypesContext ctx) {
-                self.write(backwards.apply(value), writer, ctx);
+                self.write(value == null ? null : backwards.apply(value), writer, ctx);
             }
             
             @Override
             public R read(ValueReader reader) {
-                return forwards.apply(self.read(reader));
+                T read = self.read(reader);
+                return read == null ? null : forwards.apply(read);
+            }
+            
+            @Override
+            public R copy(R value, OptionTypesContext ctx) {
+                if (value == null) return null;
+                T read = self.copy(backwards.apply(value), ctx);
+                return read == null ? null : forwards.apply(read);
             }
             
             @Override
             @Nullable
             public R getDefaultValue() {
-                return forwards.apply(self.getDefaultValue());
+                T defaultValue = self.getDefaultValue();
+                return defaultValue == null ? null : forwards.apply(defaultValue);
             }
             
             @Override

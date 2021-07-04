@@ -19,6 +19,7 @@
 
 package me.shedaniel.clothbit.api.annotations;
 
+import me.shedaniel.clothbit.api.options.property.NullableOptionProperty;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.annotation.ElementType;
@@ -30,4 +31,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Nullable
 public @interface AllowNulls {
+    NullableOptionProperty.HandleMode value() default NullableOptionProperty.HandleMode.ALLOW_NULL;
 }

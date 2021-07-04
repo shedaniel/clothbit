@@ -17,8 +17,13 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.api.serializers;
+package me.shedaniel.clothbit.impl.client.gui.entry.component.value;
 
-public interface OptionWriter<T> {
-    ValueWriter forOption(T option);
+import me.shedaniel.clothbit.impl.client.gui.entry.BaseOptionEntry;
+import me.shedaniel.clothbit.impl.client.gui.entry.ValueEntryComponent;
+
+public class EntryValueEntryComponent<T> extends ValueEntryComponent<T> {
+    public EntryValueEntryComponent(BaseOptionEntry<T> parent) {
+        super(parent);
+    }
 }

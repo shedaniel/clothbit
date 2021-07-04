@@ -21,8 +21,8 @@ package me.shedaniel.clothbit.api.options.type.simple;
 
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 public class CharacterOptionType implements OptionType<Character> {
@@ -44,6 +44,11 @@ public class CharacterOptionType implements OptionType<Character> {
     @Override
     public Character read(ValueReader reader) {
         return reader.peek().isNull() ? reader.readNull() : reader.readCharacter();
+    }
+    
+    @Override
+    public Character copy(Character value, OptionTypesContext ctx) {
+        return value;
     }
     
     @Override

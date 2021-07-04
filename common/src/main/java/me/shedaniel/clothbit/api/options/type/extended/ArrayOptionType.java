@@ -20,10 +20,10 @@
 package me.shedaniel.clothbit.api.options.type.extended;
 
 import com.google.common.base.Preconditions;
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Array;
@@ -63,6 +63,16 @@ public class ArrayOptionType<T> implements OptionType<Object> {
         int i = 0;
         for (T value : values) {
             Array.set(array, i, values.get(i++));
+        }
+        return array;
+    }
+    
+    @Override
+    public Object copy(Object value, OptionTypesContext ctx) {
+        int length = Array.getLength(value);
+        Object array = Array.newInstance(type, length);
+        for (int i = 0; i < length; i++) {
+            Array.set(array, i, this.parent.copy((T) Array.get(value, i), ctx));
         }
         return array;
     }

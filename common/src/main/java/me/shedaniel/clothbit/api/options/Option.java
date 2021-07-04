@@ -52,12 +52,16 @@ public interface Option<T> {
         return getProperty(CommentsOptionProperty.property());
     }
     
-    default boolean isNullable() {
+    default NullableOptionProperty.HandleMode getNullable() {
         return getProperty(NullableOptionProperty.property());
     }
     
     default OptionPair<T> withValue(T value) {
         return OptionPair.of(this, value);
+    }
+    
+    default OptionPair<T> withDefaultValue() {
+        return withValue(getDefaultValue());
     }
     
     @ApiStatus.NonExtendable
@@ -76,7 +80,7 @@ public interface Option<T> {
             return property(CommentsOptionProperty.property(), comments);
         }
         
-        default Builder<T> nullable(boolean nullable) {
+        default Builder<T> nullable(NullableOptionProperty.HandleMode nullable) {
             return property(NullableOptionProperty.property(), nullable);
         }
         

@@ -20,10 +20,11 @@
 package me.shedaniel.clothbit.impl.serializers.json5;
 
 import me.shedaniel.clothbit.api.options.Option;
-import me.shedaniel.clothbit.api.serializers.OptionWriter;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
-import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.api.serializers.format.FormatEncoder;
+import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.api.serializers.format.flags.CommentFlag;
 import me.shedaniel.clothbit.api.serializers.format.flags.IndentFlag;
 import me.shedaniel.clothbit.api.serializers.format.flags.QuoteKeysFlag;
@@ -38,7 +39,7 @@ import static me.shedaniel.clothbit.impl.utils.EscapingUtils.call;
 
 public class Json5FormatEncoder implements FormatEncoder<Writer> {
     @Override
-    public <T> ValueWriter writer(Writer writer, FormatFlag... flags) {
+    public <T> ValueWriter writer(Writer writer, OptionTypesContext ctx, FormatFlag... flags) {
         BufferedWriter bufferedWriter = writer instanceof BufferedWriter ? (BufferedWriter) writer
                 : new BufferedWriter(writer);
         Json5ValueWriter valueWriter = new Json5ValueWriter(bufferedWriter, bufferedWriter::close);
@@ -76,11 +77,11 @@ public class Json5FormatEncoder implements FormatEncoder<Writer> {
         public void setCommentsEnabled(boolean commentsEnabled) {
             this.commentsEnabled = commentsEnabled;
         }
-    
+        
         public void setQuoteKeys(boolean quoteKeys) {
             this.quoteKeys = quoteKeys;
         }
-    
+        
         @Override
         public void writeNull() {
             
@@ -95,12 +96,12 @@ public class Json5FormatEncoder implements FormatEncoder<Writer> {
         public void writeBoolean(boolean value) {
             
         }
-    
+        
         @Override
         public void writeCharacter(char value) {
-        
+            
         }
-    
+        
         @Override
         public void writeNumber(Number value) {
             

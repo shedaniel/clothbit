@@ -20,12 +20,11 @@
 package me.shedaniel.clothbit.api.options.type.simple.number;
 
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
-import me.shedaniel.clothbit.api.options.OptionType;
-import me.shedaniel.clothbit.api.serializers.ValueReader;
-import me.shedaniel.clothbit.api.serializers.ValueWriter;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
-public class ByteOptionType implements OptionType<Byte> {
+public class ByteOptionType implements AbstractNumberOptionType<Byte> {
     private final boolean primitive;
     
     public ByteOptionType(boolean primitive) {
