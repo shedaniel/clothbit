@@ -25,6 +25,7 @@ import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionValue;
 import me.shedaniel.clothbit.api.serializers.writer.RootValueWriter;
 import me.shedaniel.clothbit.impl.client.gui.adapter.OptionEntryWriter;
+import me.shedaniel.clothbit.impl.client.gui.entry.SplitatorListEntry;
 import me.shedaniel.clothbit.impl.client.gui.widgets.ListWidget;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.components.Button;
@@ -34,6 +35,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class OptionsScreenImpl extends WidgetScreen implements OptionsScreen {
     private static final int TOP = 26;
     private static final int BOTTOM = 24;
@@ -41,6 +45,7 @@ public class OptionsScreenImpl extends WidgetScreen implements OptionsScreen {
     private final String id;
     private final OptionTypesContext ctx;
     private final ListWidget<?> widget = new ListWidget<>(0, 0, 0, 0, Gui.BACKGROUND_LOCATION);
+    private final List<ListWidget.Entry<?>> entries = new ArrayList<>();
     
     public OptionsScreenImpl(Screen parent, String id, OptionTypesContext ctx) {
         super(getName(id + ".title"));
@@ -55,18 +60,26 @@ public class OptionsScreenImpl extends WidgetScreen implements OptionsScreen {
     
     @Override
     public <T> void add(OptionValue<T> value) {
-        RootValueWriter writer = new OptionEntryWriter.RootOptionValueWriter(id, ((ListWidget) widget)::addItem, ctx);
+        RootValueWriter writer = new OptionEntryWriter.RootOptionValueWriter(id, entries::add, ctx);
         value.write(writer, ctx);
     }
     
     @Override
     protected void initWidgets() {
+        for (int i = 0; i < entries.size(); i++) {
+            ListWidget.Entry<?> entry = entries.get(i);
+            if (i != entries.size() - 1) {
+                entry = new SplitatorListEntry(entry);
+            }
+            ((ListWidget) widget).addItem(entry);
+        }
+        entries.clear();
         widget.updateSize(width, height, TOP, height - BOTTOM);
         addWidget(widget);
-    
+        
         int buttonWidths = Math.min(200, (width - 50 - 12) / 3);
-        addButton(new Button( width / 2 - buttonWidths - 3, height - 22, buttonWidths, 20, TextComponent.EMPTY, button -> onClose()));
-        addButton(new Button( width / 2 + 3, height - 22, buttonWidths, 20, TextComponent.EMPTY, button -> save()));
+        addButton(new Button(width / 2 - buttonWidths - 3, height - 22, buttonWidths, 20, TextComponent.EMPTY, button -> onClose()));
+        addButton(new Button(width / 2 + 3, height - 22, buttonWidths, 20, TextComponent.EMPTY, button -> save()));
     }
     
     @Override

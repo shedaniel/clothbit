@@ -22,6 +22,7 @@ package me.shedaniel.clothbit.impl.client.gui.entry;
 import com.mojang.blaze3d.vertex.PoseStack;
 import me.shedaniel.clothbit.impl.client.gui.widgets.WidgetWithBounds;
 import me.shedaniel.clothbit.impl.utils.Animator;
+import me.shedaniel.clothbit.impl.utils.BooleanAnimator;
 import me.shedaniel.clothbit.impl.utils.Observable;
 import me.shedaniel.math.Rectangle;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -38,11 +39,11 @@ public abstract class EntryComponent<T> extends WidgetWithBounds {
     private final List<Animator> animators = new ArrayList<>();
     private final List<net.minecraft.client.gui.components.Widget> drawables = new ArrayList<>();
     public final Observable<Boolean> hovered = observe(false);
-    public final Animator hovering = animate(0.0);
+    public final BooleanAnimator hoveringColor = animate(false);
     
     public EntryComponent(BaseOptionEntry<T> parent) {
         this.parent = parent;
-        listenParentHovered(hovered -> hovering.setTo(hovered ? 100 : 0, 100));
+        listenHovered(hovered -> hoveringColor.setTo(hovered, hovered ? 100 : 300));
     }
     
     protected void listenValue(Runnable listener) {
@@ -81,6 +82,12 @@ public abstract class EntryComponent<T> extends WidgetWithBounds {
     
     protected Animator animate(double value) {
         Animator animator = new Animator(value);
+        this.animators.add(animator);
+        return animator;
+    }
+    
+    protected BooleanAnimator animate(boolean value) {
+        BooleanAnimator animator = new BooleanAnimator(value);
         this.animators.add(animator);
         return animator;
     }

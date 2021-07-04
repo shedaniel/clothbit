@@ -24,8 +24,11 @@ import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.FieldNameComponent;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.ResetButtonComponent;
+import me.shedaniel.clothbit.impl.client.gui.entry.component.SandwichIconComponent;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.value.EntryValueEntryComponent;
 import me.shedaniel.clothbit.impl.client.gui.widgets.ListWidget;
+import me.shedaniel.clothbit.impl.utils.Animator;
+import me.shedaniel.clothbit.impl.utils.BooleanAnimator;
 import me.shedaniel.clothbit.impl.utils.Observable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import org.jetbrains.annotations.Nullable;
@@ -40,9 +43,11 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     public final Option<?>[] parents;
     private final List<GuiEventListener> children = new ArrayList<>();
     private final List<Observable<?>> observables = new ArrayList<>();
+    private final List<Animator> animators = new ArrayList<>();
     public final T originalValue;
     public final Observable<T> value;
     public final Observable<Boolean> hovered = observe(false);
+    public final BooleanAnimator selected = animate(false);
     public ValueEntryComponent<T> valueHolder;
     
     private final List<EntryComponent<T>> entryComponents = new ArrayList<>();
@@ -85,6 +90,18 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
         return observable;
     }
     
+    protected Animator animate(double value) {
+        Animator animator = new Animator(value);
+        this.animators.add(animator);
+        return animator;
+    }
+    
+    protected BooleanAnimator animate(boolean value) {
+        BooleanAnimator animator = new BooleanAnimator(value);
+        this.animators.add(animator);
+        return animator;
+    }
+    
     @Override
     public List<? extends GuiEventListener> children() {
         return children;
@@ -98,6 +115,10 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
             observable.update();
         }
         
+        for (Animator animator : this.animators) {
+            animator.update(delta);
+        }
+        
         for (EntryComponent<T> component : entryComponents) {
             component.render(matrices, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, isHovered && component.containsMouse(mouseX, mouseY), delta);
         }
@@ -105,10 +126,11 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     
     @Override
     public int getItemHeight() {
-        return 22;
+        return 24 + (int) Math.round(Math.pow(selected.progress(), 1) * 48);
     }
     
     public void addFieldName() {
+        addComponent(new SandwichIconComponent<>(this));
         addComponent(new FieldNameComponent<>(this));
     }
     

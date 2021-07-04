@@ -21,7 +21,7 @@ package me.shedaniel.clothbit.impl.utils;
 
 import net.minecraft.Util;
 
-public final class Animator extends Number {
+public class Animator extends Number {
     private double amount;
     private double target;
     private long start;

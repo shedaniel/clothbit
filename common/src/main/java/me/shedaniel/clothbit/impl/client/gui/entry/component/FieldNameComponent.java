@@ -64,13 +64,13 @@ public class FieldNameComponent<T> extends EntryComponent<T> {
         } else {
             text.withStyle(style -> style.withColor(TextColor.fromRgb(getUneditedColor())));
         }
-        font.draw(poses, text, x, y + 8, TEXT_COLOR);
+        font.draw(poses, text, x + 16, y + 7, TEXT_COLOR);
         
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
     }
     
     private int getUneditedColor() {
-        int i = (int) (170 + 60 * hovering.doubleValue() / 100);
+        int i = (int) (140 + 60 * Math.max(parent.selected.progress() * 1.7, hoveringColor.progress()));
         return Color.ofRGB(i, i, i).getColor();
     }
 }
