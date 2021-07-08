@@ -64,6 +64,10 @@ public interface Option<T> {
         return withValue(getDefaultValue());
     }
     
+    default boolean isNullable() {
+        return getNullable() != NullableOptionProperty.HandleMode.DENY_NULL;
+    }
+    
     @ApiStatus.NonExtendable
     interface Builder<T> {
         Builder<T> name(String name);

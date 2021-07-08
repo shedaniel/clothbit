@@ -19,10 +19,17 @@
 
 package me.shedaniel.clothbit.api.serializers.reader;
 
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.ReadType;
+import me.shedaniel.clothbit.api.serializers.ValueBuffer;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
@@ -46,6 +53,7 @@ public interface ValueReader extends Closeable {
     float readFloat();
     
     double readDouble();
+    
     Number readNumber();
     
     void readObject(BiPredicate<String, ValueReader> consumer);
@@ -56,4 +64,48 @@ public interface ValueReader extends Closeable {
     
     @Override
     void close();
+    
+    default void writeTo(ValueWriter writer, OptionTypesContext ctx) {
+        ValueBuffer buffer = new ValueBuffer();
+        buffer.writeFrom(this, ctx);
+        writer.writeAny(buffer.pop(), ctx);
+    }
+    
+    default Object readAny() {
+        ReadType peek = peek();
+        switch (peek) {
+            case BYTE:
+                return readByte();
+            case SHORT:
+                return readShort();
+            case INT:
+                return readInt();
+            case LONG:
+                return readLong();
+            case FLOAT:
+                return readFloat();
+            case DOUBLE:
+                return readDouble();
+            case CHARACTER:
+                return readCharacter();
+            case OBJECT:
+                Map<String, Object> dataMap = new HashMap<>();
+                readObject((key, valueReader) -> {
+                    dataMap.put(key, valueReader.readAny());
+                    return true;
+                });
+                return dataMap;
+            case ARRAY:
+                List<Object> dataList = new ArrayList<>();
+                readArray(valueReader -> {
+                    dataList.add(valueReader.readAny());
+                });
+                return dataList;
+        }
+        if (peek.isNumber()) return readNumber();
+        if (peek.isBoolean()) return readBoolean();
+        if (peek.isNull()) return readNull();
+        if (peek.isString()) return readString();
+        throw new IllegalStateException("Reading unknown type: " + peek);
+    }
 }

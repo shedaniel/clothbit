@@ -19,37 +19,35 @@
 
 package me.shedaniel.clothbit.api.options.type.simple;
 
+import com.google.common.base.Preconditions;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
-public class AnyOptionType<T> implements OptionType<T> {
-    private static AnyOptionType<Object> INSTANCE = new AnyOptionType<>();
+public class NullOptionType implements OptionType<Object> {
+    private static NullOptionType INSTANCE = new NullOptionType();
     
-    public static <T> AnyOptionType<T> getInstance() {
-        return (AnyOptionType<T>) INSTANCE;
+    public static NullOptionType getInstance() {
+        return INSTANCE;
     }
     
     @Override
     public void write(Object value, ValueWriter writer, OptionTypesContext ctx) {
-        writer.writeAny(value, ctx);
+        Preconditions.checkArgument(value == null, "Expected null in NullOptionType!");
+        writer.writeNull();
     }
     
     @Override
-    public T read(ValueReader reader) {
-        return (T) reader.readAny();
+    public Object read(ValueReader reader) {
+        return reader.readNull();
     }
     
     @Override
-    public T copy(T value, OptionTypesContext ctx) {
-        OptionType<T> type = ctx.resolveType((Class<T>) value.getClass());
-        if (type instanceof AnyOptionType) {
-            throw new IllegalStateException("Can not resolve option type for " + value);
-        } else {
-            return type.copy(value, ctx);
-        }
+    public Object copy(Object value, OptionTypesContext ctx) {
+        Preconditions.checkArgument(value == null, "Expected null in NullOptionType!");
+        return null;
     }
     
     @Override
@@ -59,7 +57,7 @@ public class AnyOptionType<T> implements OptionType<T> {
     
     @Override
     @Nullable
-    public T getDefaultValue() {
+    public Object getDefaultValue() {
         return null;
     }
 }

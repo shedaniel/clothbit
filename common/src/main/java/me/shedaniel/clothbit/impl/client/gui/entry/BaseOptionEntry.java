@@ -19,8 +19,11 @@
 
 package me.shedaniel.clothbit.impl.client.gui.entry;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.FieldNameComponent;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.ResetButtonComponent;
@@ -31,17 +34,25 @@ import me.shedaniel.clothbit.impl.utils.Animator;
 import me.shedaniel.clothbit.impl.utils.BooleanAnimator;
 import me.shedaniel.clothbit.impl.utils.Observable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
+    public static final int INDENT = 20;
     public final String id;
-    public final Option<T> option;
+    public final Object option;
+    public final OptionType<T> type;
     
     public final Option<?>[] parents;
+    private final Supplier<Integer> extraHeight = extraHeightSupplier(false);
+    private final Supplier<Integer> extraHeightExpended = extraHeightSupplier(true);
     private final List<GuiEventListener> children = new ArrayList<>();
+    private final List<Consumer<ListWidget<BaseOptionEntry<T>>>> onParentUpdate = new ArrayList<>();
     private final List<Observable<?>> observables = new ArrayList<>();
     private final List<Animator> animators = new ArrayList<>();
     public final T originalValue;
@@ -49,16 +60,27 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     public final Observable<Boolean> hovered = observe(false);
     public final BooleanAnimator selected = animate(false);
     public ValueEntryComponent<T> valueHolder;
-    
     private final List<EntryComponent<T>> entryComponents = new ArrayList<>();
     
-    public BaseOptionEntry(String id, Option<T> option, T value, OptionTypesContext ctx, Option<?>[] parents) {
+    public BaseOptionEntry(String id, Object option, OptionType<T> type, T value, OptionTypesContext ctx, Option<?>[] parents) {
         this.id = id;
-        this.option = option;
+        this.option = MoreObjects.firstNonNull(option, type);
+        this.type = type;
         this.originalValue = value;
         this.parents = parents;
-        this.value = observe(option.getType().copy(value, ctx));
+        this.value = observe(type.copy(value, ctx));
         this.valueHolder = new EntryValueEntryComponent<>(this);
+    }
+    
+    private Supplier<Integer> extraHeightSupplier(boolean expended) {
+        return Suppliers.memoize(() -> {
+            int max = 0;
+            for (EntryComponent<T> component : this.entryComponents) {
+                int height = component.getExtraHeight(expended);
+                if (height > max) max = height;
+            }
+            return max;
+        });
     }
     
     public <R extends GuiEventListener> R addChild(R listener) {
@@ -102,6 +124,18 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
         return animator;
     }
     
+    public void listenParentChange(Consumer<ListWidget<BaseOptionEntry<T>>> listener) {
+        this.onParentUpdate.add(listener);
+    }
+    
+    @Override
+    public void setParent(ListWidget<BaseOptionEntry<T>> parent) {
+        super.setParent(parent);
+        for (Consumer<ListWidget<BaseOptionEntry<T>>> listener : this.onParentUpdate) {
+            listener.accept(parent);
+        }
+    }
+    
     @Override
     public List<? extends GuiEventListener> children() {
         return children;
@@ -126,15 +160,25 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     
     @Override
     public int getItemHeight() {
-        return 24 + (int) Math.round(selected.progress() * 48);
+        return 24 + extraHeight.get() + (int) Math.round(selected.progress() * extraHeightExpended.get());
     }
     
-    public void addFieldName() {
+    public void addFieldName(Option<T> option) {
         addComponent(new SandwichIconComponent<>(this));
-        addComponent(new FieldNameComponent<>(this));
+        addComponent(new FieldNameComponent<>(option, this));
+    }
+    
+    public void addFieldName(Supplier<Component> fieldName) {
+        addComponent(new SandwichIconComponent<>(this));
+        addComponent(new FieldNameComponent<>(fieldName, this));
     }
     
     public void addResetButton() {
         addComponent(new ResetButtonComponent<>(this));
+    }
+    
+    public T getDefaultValue() {
+        if (option instanceof Option) return ((Option<T>) option).getDefaultValue();
+        return ((OptionType<T>) option).getDefaultValue();
     }
 }

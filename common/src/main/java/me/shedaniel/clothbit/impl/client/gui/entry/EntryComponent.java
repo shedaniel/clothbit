@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 public abstract class EntryComponent<T> extends WidgetWithBounds {
     protected final BaseOptionEntry<T> parent;
     protected final Rectangle bounds = new Rectangle();
-    private final List<GuiEventListener> children = new ArrayList<>();
+    protected final List<GuiEventListener> children = new ArrayList<>();
     private final List<Observable<?>> observables = new ArrayList<>();
     private final List<Animator> animators = new ArrayList<>();
     private final List<net.minecraft.client.gui.components.Widget> drawables = new ArrayList<>();
@@ -44,6 +44,13 @@ public abstract class EntryComponent<T> extends WidgetWithBounds {
     public EntryComponent(BaseOptionEntry<T> parent) {
         this.parent = parent;
         listenHovered(hovered -> hoveringColor.setTo(hovered, hovered ? 100 : 300));
+        this.parent.listenParentChange(parentList -> {
+            for (GuiEventListener listener : this.children()) {
+                if (listener instanceof BaseOptionEntry) {
+                    ((BaseOptionEntry<T>) listener).setParent(parentList);
+                }
+            }
+        });
     }
     
     protected void listenValue(Runnable listener) {
@@ -106,6 +113,10 @@ public abstract class EntryComponent<T> extends WidgetWithBounds {
         for (net.minecraft.client.gui.components.Widget widget : this.drawables) {
             widget.render(poses, mouseX, mouseY, delta);
         }
+    }
+    
+    public int getExtraHeight(boolean expended) {
+        return 0;
     }
     
     @Override

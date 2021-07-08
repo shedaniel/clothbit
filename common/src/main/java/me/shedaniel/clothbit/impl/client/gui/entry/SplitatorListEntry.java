@@ -78,6 +78,12 @@ public class SplitatorListEntry extends ListWidget.Entry<SplitatorListEntry> {
     }
     
     @Override
+    public void setParent(ListWidget<SplitatorListEntry> parent) {
+        super.setParent(parent);
+        this.parent.setParent((ListWidget) parent);
+    }
+    
+    @Override
     public int getItemHeight() {
         return this.parent.getItemHeight() + 7;
     }

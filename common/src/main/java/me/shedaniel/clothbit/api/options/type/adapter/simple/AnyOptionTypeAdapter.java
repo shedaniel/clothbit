@@ -20,9 +20,9 @@
 package me.shedaniel.clothbit.api.options.type.adapter.simple;
 
 import com.google.gson.reflect.TypeToken;
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 
 import java.util.Objects;
@@ -33,7 +33,7 @@ public class AnyOptionTypeAdapter implements OptionTypeAdapter {
     public <R> Optional<OptionType<? extends R>> forType(TypeToken<R> typeToken, OptionTypesContext ctx) {
         Class<? super R> rawType = typeToken.getRawType();
         if (Objects.equals(rawType, Object.class)) {
-            return Optional.of((OptionType<? extends R>) new AnyOptionType());
+            return Optional.of((OptionType<? extends R>) AnyOptionType.getInstance());
         }
         return Optional.empty();
     }

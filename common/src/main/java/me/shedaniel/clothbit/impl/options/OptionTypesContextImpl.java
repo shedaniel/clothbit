@@ -26,6 +26,7 @@ import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.type.NullSafetyOptionType;
 import me.shedaniel.clothbit.api.options.type.adapter.extended.ArrayOptionTypeAdapter;
+import me.shedaniel.clothbit.api.options.type.adapter.extended.CollectionOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.extended.EnumOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.extended.MapOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.reflect.ReflectOptionTypeAdapter;
@@ -78,6 +79,7 @@ public class OptionTypesContextImpl implements OptionTypesContext {
         }, Objects::toString)));
         this.adapters.add(new NullSafetyAdapter(new EnumOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new ArrayOptionTypeAdapter()));
+        this.adapters.add(new NullSafetyAdapter(new CollectionOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new MapOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new AnyOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new ReflectOptionTypeAdapter()));

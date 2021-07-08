@@ -42,7 +42,7 @@ import java.util.Objects;
 public class ListWidget<E extends ListWidget.Entry<E>> extends WidgetWithBounds {
     protected static final int DRAG_OUTSIDE = -2;
     public static final float BACKGROUND_TILE_SIZE = 32.0F;
-    private final List<E> entries = new Entries();
+    private final Entries entries = new Entries();
     public int width;
     public int height;
     public int top;
@@ -493,7 +493,7 @@ public class ListWidget<E extends ListWidget.Entry<E>> extends WidgetWithBounds 
     
     @Environment(EnvType.CLIENT)
     public abstract static class Entry<E extends Entry<E>> extends Widget implements GuiEventListener {
-        ListWidget<E> parent;
+        private ListWidget<E> parent;
         
         public Entry() {
         }
@@ -547,13 +547,13 @@ public class ListWidget<E extends ListWidget.Entry<E>> extends WidgetWithBounds 
         
         @Override
         public E set(int index, E element) {
-            element.parent = ListWidget.this;
+            element.setParent(ListWidget.this);
             return this.items.set(index, element);
         }
         
         @Override
         public void add(int index, E element) {
-            element.parent = ListWidget.this;
+            element.setParent(ListWidget.this);
             this.items.add(index, element);
         }
         

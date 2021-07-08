@@ -50,6 +50,7 @@ public class ReflectOptionTypeAdapter implements OptionTypeAdapter {
                 if (!field.isSynthetic() && !Modifier.isStatic(field.getModifiers())
                     && !Modifier.isFinal(field.getModifiers()) && !Modifier.isTransient(field.getModifiers()) &&
                     field.getAnnotation(IgnoreField.class) == null) {
+                    field.setAccessible(true);
                     TypeToken<?> fieldType = TypeToken.get(field.getType());
                     OptionType<? extends R> optionType = Objects.requireNonNull((OptionType<? extends R>) ctx.resolveType(fieldType), "Failed to resolve option type for " + fieldType.getRawType());
                     String name = field.getName();

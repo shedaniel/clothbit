@@ -19,30 +19,36 @@
 
 package me.shedaniel.clothbit.impl.client.gui.adapter;
 
+import com.google.common.base.Suppliers;
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
+import me.shedaniel.clothbit.api.serializers.ValueBuffer;
+import me.shedaniel.clothbit.api.serializers.writer.NothingValueWriter;
 import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
 import me.shedaniel.clothbit.api.serializers.writer.RootValueWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.impl.client.gui.entry.BaseOptionEntry;
-import me.shedaniel.clothbit.impl.client.gui.entry.component.value.TextFieldEntryComponent;
-import me.shedaniel.clothbit.impl.client.gui.widgets.ListWidget;
+import me.shedaniel.clothbit.impl.client.gui.entry.component.value.ArrayValueEntryComponent;
+import me.shedaniel.clothbit.impl.client.gui.entry.component.value.TextFieldValueEntryComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class OptionEntryWriter implements OptionWriter<Option<?>> {
     private final String id;
-    private final Consumer<ListWidget.Entry<?>> consumer;
+    private final Consumer<BaseOptionEntry<?>> consumer;
     private final OptionTypesContext ctx;
     private final Option<?>[] parents;
     
-    public OptionEntryWriter(String id, Consumer<ListWidget.Entry<?>> consumer, OptionTypesContext ctx, Option<?>[] parents) {
+    public OptionEntryWriter(String id, Consumer<BaseOptionEntry<?>> consumer, OptionTypesContext ctx, Option<?>[] parents) {
         this.id = id;
         this.consumer = consumer;
         this.ctx = ctx;
@@ -51,15 +57,16 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
     
     @Override
     public ValueWriter forOption(Option<?> option) {
-        return new OptionValueWriter<>(id, consumer, ctx, option, parents);
+        return new OptionValueWriter(id, consumer, ctx,
+                option, option.getType(), parents);
     }
     
     public static class RootOptionValueWriter implements RootValueWriter {
         private final String id;
-        private final Consumer<ListWidget.Entry<?>> consumer;
+        private final Consumer<BaseOptionEntry<?>> consumer;
         private final OptionTypesContext ctx;
         
-        public RootOptionValueWriter(String id, Consumer<ListWidget.Entry<?>> consumer, OptionTypesContext ctx) {
+        public RootOptionValueWriter(String id, Consumer<BaseOptionEntry<?>> consumer, OptionTypesContext ctx) {
             this.id = id;
             this.consumer = consumer;
             this.ctx = ctx;
@@ -78,23 +85,31 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
     
     public static class OptionValueWriter<T> implements ValueWriter {
         private final String id;
-        private final Consumer<ListWidget.Entry<?>> consumer;
+        private final Consumer<BaseOptionEntry<T>> consumer;
         private final OptionTypesContext ctx;
-        private final Option<T> option;
+        @Nullable
+        public final Option<T> option;
+        public final OptionType<T> type;
         private final Option<?>[] parents;
         
-        public OptionValueWriter(String id, Consumer<ListWidget.Entry<?>> consumer, OptionTypesContext ctx, Option<T> option, Option<?>[] parents) {
+        public OptionValueWriter(String id, Consumer<BaseOptionEntry<T>> consumer, OptionTypesContext ctx, @Nullable Option<T> option,
+                OptionType<T> type, Option<?>[] parents) {
             this.id = id;
             this.consumer = consumer;
             this.ctx = ctx;
             this.option = option;
+            this.type = type;
             this.parents = parents;
         }
         
         public <R> void entry(R value, Consumer<BaseOptionEntry<R>> action) {
-            BaseOptionEntry<R> entry = new BaseOptionEntry<>(id, (Option<R>) option, value, ctx, parents);
+            BaseOptionEntry<R> entry = new BaseOptionEntry<>(id, option, (OptionType<R>) type, value, ctx, parents);
             action.accept(entry);
-            consumer.accept(entry);
+            consumer.accept((BaseOptionEntry<T>) entry);
+        }
+        
+        public boolean isRoot() {
+            return this.option != null;
         }
         
         @Override
@@ -104,7 +119,9 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         
         public <R> void primitiveEntry(R value, Consumer<BaseOptionEntry<R>> action) {
             entry(value, entry -> {
-                entry.addFieldName();
+                if (isRoot()) {
+                    entry.addFieldName((Option<R>) this.option);
+                }
                 entry.addResetButton();
                 action.accept(entry);
             });
@@ -113,14 +130,15 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         @Override
         public void writeString(@Nullable String value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, Function.identity(), Function.identity()));
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, Objects::toString,
+                        str -> option.isNullable() && str.equals("null") ? null : str));
             });
         }
         
         @Override
         public void writeBoolean(boolean value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, String::valueOf, str -> {
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, str -> {
                     if (str.equalsIgnoreCase("true")) return true;
                     if (str.equalsIgnoreCase("false")) return false;
                     throw new IllegalArgumentException("Invalid boolean: " + str);
@@ -130,55 +148,57 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         
         @Override
         public void writeCharacter(char value) {
-            primitiveEntry(value, entry -> {});
+            primitiveEntry(value, entry -> {
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, s -> s.charAt(0)));
+            });
         }
         
         @Override
         public void writeNumber(Number value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, String::valueOf, BigDecimal::new));
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, BigDecimal::new));
             });
         }
         
         @Override
         public void writeByte(byte value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, String::valueOf, Byte::valueOf));
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, Byte::valueOf));
             });
         }
         
         @Override
         public void writeShort(short value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, String::valueOf, Short::valueOf));
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, Short::valueOf));
             });
         }
         
         @Override
         public void writeInt(int value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, String::valueOf, Integer::valueOf));
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, Integer::valueOf));
             });
         }
         
         @Override
         public void writeLong(long value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, String::valueOf, Long::valueOf));
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, Long::valueOf));
             });
         }
         
         @Override
         public void writeFloat(float value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, String::valueOf, Float::valueOf));
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, Float::valueOf));
             });
         }
         
         @Override
         public void writeDouble(double value) {
             primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldEntryComponent<>(entry, String::valueOf, Double::valueOf));
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, String::valueOf, Double::valueOf));
             });
         }
         
@@ -188,12 +208,30 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
             Collections.addAll(parents, this.parents);
             parents.add(option);
             // TODO change consumer to a sub category
-            consumer.accept(new OptionEntryWriter(this.id, this.consumer, this.ctx, parents.toArray(new Option[0])));
+            consumer.accept(new OptionEntryWriter(this.id, entry -> {}, this.ctx, parents.toArray(new Option[0])));
         }
         
         @Override
         public void writeArray(Consumer<ValueWriter> consumer) {
-            
+            List<BaseOptionEntry<T>> entries = new ArrayList<>();
+            ValueBuffer buffer = new ValueBuffer();
+            buffer.writeArray(consumer);
+            T values = this.type.read(buffer.copy());
+            OptionValueWriter<T> valueWriter = new OptionValueWriter<>(this.id, entries::add, this.ctx, null,
+                    AnyOptionType.getInstance(), this.parents);
+            buffer.writeTo(new NothingValueWriter() {
+                @Override
+                public void writeArray(Consumer<ValueWriter> consumer) {
+                    consumer.accept(valueWriter);
+                }
+            }, ctx);
+            for (int i = 0; i < entries.size(); i++) {
+                BaseOptionEntry<T> entry = entries.get(i);
+                entry.addFieldName(Suppliers.ofInstance(new TranslatableComponent("text.clothbit.array.index", String.valueOf(i + 1))));
+            }
+            primitiveEntry(values, entry -> {
+                entry.addComponent(new ArrayValueEntryComponent<>(entry, entries));
+            });
         }
         
         @Override

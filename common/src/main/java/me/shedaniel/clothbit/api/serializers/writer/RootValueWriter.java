@@ -19,36 +19,11 @@
 
 package me.shedaniel.clothbit.api.serializers.writer;
 
+import me.shedaniel.clothbit.api.options.Option;
+
 import java.util.function.Consumer;
 
-public interface RootValueWriter extends ValueWriter {
+public interface RootValueWriter extends NothingValueWriter {
     @Override
-    default void writeNull() {
-        throw new UnsupportedOperationException("Can not start writing values without starting an object!");
-    }
-    
-    @Override
-    default void writeString(String value) {
-        throw new UnsupportedOperationException("Can not start writing values without starting an object!");
-    }
-    
-    @Override
-    default void writeBoolean(boolean value) {
-        throw new UnsupportedOperationException("Can not start writing values without starting an object!");
-    }
-    
-    @Override
-    default void writeCharacter(char value) {
-        throw new UnsupportedOperationException("Can not start writing values without starting an object!");
-    }
-    
-    @Override
-    default void writeNumber(Number value) {
-        throw new UnsupportedOperationException("Can not start writing values without starting an object!");
-    }
-    
-    @Override
-    default void writeArray(Consumer<ValueWriter> consumer) {
-        throw new UnsupportedOperationException("Can not start writing values without starting an object!");
-    }
+    void writeObject(Consumer<OptionWriter<Option<?>>> consumer);
 }

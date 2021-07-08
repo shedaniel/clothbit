@@ -25,8 +25,8 @@ import net.minecraft.client.Minecraft;
 
 import java.util.function.Function;
 
-public class TextFieldEntryComponent<T> extends AbstractWidgetEntryComponent<T, ClothEditBox> {
-    public TextFieldEntryComponent(BaseOptionEntry<T> parent, Function<T, String> toString, Function<String, T> fromString) {
+public class TextFieldValueEntryComponent<T> extends AbstractWidgetEntryComponent<T, ClothEditBox> {
+    public TextFieldValueEntryComponent(BaseOptionEntry<T> parent, Function<T, String> toString, Function<String, T> fromString) {
         super(parent);
         this.widget = addChild(new ClothEditBox(Minecraft.getInstance().font, 0, 0, BUTTON_WIDTH - 2, BUTTON_HEIGHT - 2, null));
         this.widget.setMaxLength(1000000);

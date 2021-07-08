@@ -19,7 +19,6 @@
 
 package me.shedaniel.clothbit.impl.client.gui.entry.component;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import me.shedaniel.clothbit.api.options.Option;
@@ -32,22 +31,28 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextColor;
 
+import java.util.function.Supplier;
+
 public class FieldNameComponent<T> extends EntryComponent<T> {
     public static final int ERROR_COLOR = 0xFF5555;
     public static final int UNEDITED_COLOR = 0xAAAAAA;
     public static final int TEXT_COLOR = 0xFFFFFF;
     public final Supplier<Component> fieldName;
     
-    public FieldNameComponent(BaseOptionEntry<T> parent) {
-        super(parent);
-        this.fieldName = Suppliers.memoize(() -> {
+    public FieldNameComponent(Option<T> option, BaseOptionEntry<T> parent) {
+        this(Suppliers.memoize(() -> {
             StringBuilder s = new StringBuilder(parent.id);
             for (Option<?> optionParent : parent.parents) {
                 s.append(".").append(optionParent.getName());
             }
-            s.append(".").append(parent.option.getName());
+            s.append(".").append(option.getName());
             return OptionsScreenImpl.getName(s.toString());
-        });
+        }), parent);
+    }
+    
+    public FieldNameComponent(Supplier<Component> fieldName, BaseOptionEntry<T> parent) {
+        super(parent);
+        this.fieldName = fieldName;
     }
     
     @Override

@@ -30,6 +30,7 @@ public enum ReadType {
     LONG,
     FLOAT,
     DOUBLE,
+    CHARACTER,
     OBJECT,
     ARRAY,
     OTHER,

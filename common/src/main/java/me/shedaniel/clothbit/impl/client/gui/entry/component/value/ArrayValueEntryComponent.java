@@ -17,33 +17,35 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.impl.client.gui.entry.component;
+package me.shedaniel.clothbit.impl.client.gui.entry.component.value;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import me.shedaniel.clothbit.impl.client.gui.entry.BaseOptionEntry;
-import me.shedaniel.clothbit.impl.client.gui.entry.EntryComponent;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.TextComponent;
+import me.shedaniel.clothbit.impl.client.gui.entry.ValueEntryComponent;
 
-import java.util.Objects;
+import java.util.List;
 
-public class ResetButtonComponent<T> extends EntryComponent<T> {
-    private final Button resetButton = addChild(new Button(0, 0, 46, 20, new TextComponent("Reset"), this::onResetPressed));
+public class ArrayValueEntryComponent<T> extends ValueEntryComponent<T> {
+    private final List<BaseOptionEntry<T>> entries;
     
-    public ResetButtonComponent(BaseOptionEntry<T> parent) {
+    public ArrayValueEntryComponent(BaseOptionEntry<T> parent, List<BaseOptionEntry<T>> entries) {
         super(parent);
-        listenValue(() -> resetButton.active = !Objects.equals(parent.getDefaultValue(), parent.value.get()));
-    }
-    
-    private void onResetPressed(Button button) {
-        parent.value.set(parent.getDefaultValue());
+        this.entries = entries;
+        this.children.addAll(this.entries);
     }
     
     @Override
     public void render(PoseStack poses, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, boolean componentHovered, float delta) {
-        resetButton.x = x + entryWidth - 46;
-        resetButton.y = y + 1;
-        bounds.setBounds(resetButton.x, resetButton.y, resetButton.getWidth(), resetButton.getHeight());
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
+        int yy = y;
+        for (BaseOptionEntry<T> entry : entries) {
+            entry.render(poses, index, yy += entry.getItemHeight(), x + BaseOptionEntry.INDENT, entryWidth - BaseOptionEntry.INDENT, entry.getItemHeight(), mouseX, mouseY, isHovered && entry.containsMouse(mouseX, mouseY), delta);
+        }
+    }
+    
+    @Override
+    public int getExtraHeight(boolean expended) {
+        if (expended) return entries.stream().mapToInt(BaseOptionEntry::getItemHeight).sum();
+        return super.getExtraHeight(expended);
     }
 }
