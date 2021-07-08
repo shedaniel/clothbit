@@ -37,9 +37,12 @@ public class ArrayValueEntryComponent<T> extends ValueEntryComponent<T> {
     @Override
     public void render(PoseStack poses, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, boolean componentHovered, float delta) {
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
-        int yy = y;
+        if (parent.selected.progress() < .01) return;
+        int yy = y + 24;
         for (BaseOptionEntry<T> entry : entries) {
-            entry.render(poses, index, yy += entry.getItemHeight(), x + BaseOptionEntry.INDENT, entryWidth - BaseOptionEntry.INDENT, entry.getItemHeight(), mouseX, mouseY, isHovered && entry.containsMouse(mouseX, mouseY), delta);
+            int itemHeight = entry.getItemHeight();
+            entry.render(poses, index, x + BaseOptionEntry.INDENT, yy, entryWidth - BaseOptionEntry.INDENT, itemHeight, mouseX, mouseY, isHovered && entry.containsMouse(mouseX, mouseY), delta);
+            yy += itemHeight;
         }
     }
     

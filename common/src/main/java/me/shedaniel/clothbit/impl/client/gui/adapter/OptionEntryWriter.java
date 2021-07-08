@@ -213,10 +213,13 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         
         @Override
         public void writeArray(Consumer<ValueWriter> consumer) {
-            List<BaseOptionEntry<T>> entries = new ArrayList<>();
+            // Buffer all the values to get the value in object form
             ValueBuffer buffer = new ValueBuffer();
             buffer.writeArray(consumer);
             T values = this.type.read(buffer.copy());
+            
+            // Write the values into gui entries
+            List<BaseOptionEntry<T>> entries = new ArrayList<>();
             OptionValueWriter<T> valueWriter = new OptionValueWriter<>(this.id, entries::add, this.ctx, null,
                     AnyOptionType.getInstance(), this.parents);
             buffer.writeTo(new NothingValueWriter() {
@@ -225,10 +228,14 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
                     consumer.accept(valueWriter);
                 }
             }, ctx);
+            
+            // Apply field names
             for (int i = 0; i < entries.size(); i++) {
                 BaseOptionEntry<T> entry = entries.get(i);
                 entry.addFieldName(Suppliers.ofInstance(new TranslatableComponent("text.clothbit.array.index", String.valueOf(i + 1))));
             }
+            
+            // Add array entry
             primitiveEntry(values, entry -> {
                 entry.addComponent(new ArrayValueEntryComponent<>(entry, entries));
             });

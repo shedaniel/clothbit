@@ -22,6 +22,7 @@ package me.shedaniel.clothbit.impl.client.gui.entry;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.vertex.PoseStack;
+import me.shedaniel.clothbit.api.client.gui.ScissorsStack;
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
@@ -33,6 +34,7 @@ import me.shedaniel.clothbit.impl.client.gui.widgets.ListWidget;
 import me.shedaniel.clothbit.impl.utils.Animator;
 import me.shedaniel.clothbit.impl.utils.BooleanAnimator;
 import me.shedaniel.clothbit.impl.utils.Observable;
+import me.shedaniel.math.Rectangle;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +50,7 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     public final Object option;
     public final OptionType<T> type;
     
+    protected final Rectangle bounds = new Rectangle();
     public final Option<?>[] parents;
     private final Supplier<Integer> extraHeight = extraHeightSupplier(false);
     private final Supplier<Integer> extraHeightExpended = extraHeightSupplier(true);
@@ -70,6 +73,15 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
         this.parents = parents;
         this.value = observe(type.copy(value, ctx));
         this.valueHolder = new EntryValueEntryComponent<>(this);
+    }
+    
+    public Rectangle getBounds() {
+        return bounds;
+    }
+    
+    @Override
+    public boolean containsMouse(double mouseX, double mouseY) {
+        return bounds.contains(mouseX, mouseY);
     }
     
     private Supplier<Integer> extraHeightSupplier(boolean expended) {
@@ -142,7 +154,10 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     }
     
     @Override
-    public void render(PoseStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
+    public void render(PoseStack matrices, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
+        this.bounds.setBounds(x, y, entryWidth, entryHeight);
+        ScissorsStack.getInstance().push(this.bounds).applyStack();
+        //        fill(matrices, 0, 0, 10000, 10000, 0x20FFFFFF);
         this.hovered.set(isHovered);
         
         for (Observable<?> observable : this.observables) {
@@ -156,6 +171,7 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
         for (EntryComponent<T> component : entryComponents) {
             component.render(matrices, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, isHovered && component.containsMouse(mouseX, mouseY), delta);
         }
+        ScissorsStack.getInstance().pop().applyStack();
     }
     
     @Override

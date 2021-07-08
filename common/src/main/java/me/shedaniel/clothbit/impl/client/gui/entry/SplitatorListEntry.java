@@ -38,9 +38,9 @@ public class SplitatorListEntry extends ListWidget.Entry<SplitatorListEntry> {
     }
     
     @Override
-    public void render(PoseStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
-        this.parent.render(matrices, index, y + 2, x, entryWidth, entryHeight - 7, mouseX, mouseY, isHovered, delta);
-        dotHLine(matrices, x, x + entryWidth, y + entryHeight + 1, 0xFF777777);
+    public void render(PoseStack matrices, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
+        this.parent.render(matrices, index, x, y + 2, entryWidth, entryHeight - 6, mouseX, mouseY, isHovered, delta);
+        dotHLine(matrices, x, x + entryWidth, y + entryHeight, 0xFF777777);
     }
     
     private void dotHLine(PoseStack matrices, int x1, int x2, int y, int color) {

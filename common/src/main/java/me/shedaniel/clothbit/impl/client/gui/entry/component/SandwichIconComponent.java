@@ -39,7 +39,7 @@ public class SandwichIconComponent<T> extends EntryComponent<T> {
     
     @Override
     public void render(PoseStack poses, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, boolean componentHovered, float delta) {
-        bounds.setBounds(x, y + 5, 12, 12);
+        bounds.setBounds(x, y + 4, 12, 12);
         renderSandwich(poses, bounds);
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
     }

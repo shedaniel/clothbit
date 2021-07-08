@@ -69,7 +69,7 @@ public class FieldNameComponent<T> extends EntryComponent<T> {
         } else {
             text.withStyle(style -> style.withColor(TextColor.fromRgb(getUneditedColor())));
         }
-        font.draw(poses, text, x + 16, y + 7, TEXT_COLOR);
+        font.draw(poses, text, x + 16, y + 6, TEXT_COLOR);
         
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
     }

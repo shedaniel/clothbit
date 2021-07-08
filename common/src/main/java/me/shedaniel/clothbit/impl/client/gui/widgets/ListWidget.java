@@ -433,13 +433,13 @@ public class ListWidget<E extends ListWidget.Entry<E>> extends WidgetWithBounds 
             
             int y = this.getRowTop(renderIndex);
             int x = this.getRowLeft();
-            renderItem(matrices, item, renderIndex, y, x, itemWidth, itemHeight, mouseX, mouseY, Objects.equals(hoveredItem, item), delta);
+            renderItem(matrices, item, renderIndex, x, y, itemWidth, itemHeight, mouseX, mouseY, Objects.equals(hoveredItem, item), delta);
         }
         
     }
     
-    protected void renderItem(PoseStack matrices, E item, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
-        item.render(matrices, index, y, x, entryWidth, entryHeight, mouseX, mouseY, isSelected, delta);
+    protected void renderItem(PoseStack matrices, E item, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isSelected, float delta) {
+        item.render(matrices, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isSelected, delta);
     }
     
     protected int getRowLeft() {
@@ -498,7 +498,7 @@ public class ListWidget<E extends ListWidget.Entry<E>> extends WidgetWithBounds 
         public Entry() {
         }
         
-        public abstract void render(PoseStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta);
+        public abstract void render(PoseStack matrices, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta);
         
         @Override
         public boolean containsMouse(double mouseX, double mouseY) {

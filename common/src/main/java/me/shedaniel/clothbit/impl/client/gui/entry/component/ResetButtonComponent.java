@@ -42,7 +42,7 @@ public class ResetButtonComponent<T> extends EntryComponent<T> {
     @Override
     public void render(PoseStack poses, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, boolean componentHovered, float delta) {
         resetButton.x = x + entryWidth - 46;
-        resetButton.y = y + 1;
+        resetButton.y = y;
         bounds.setBounds(resetButton.x, resetButton.y, resetButton.getWidth(), resetButton.getHeight());
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
     }
