@@ -86,7 +86,7 @@ public class SandwichIconComponent<T> extends EntryComponent<T> {
         
         line(bufferBuilder, pose, sX, upY, eX, Mth.lerp(selected, upY, downY), z, a, r, g, b);
         if (selected < 0.99) {
-            line(bufferBuilder, pose, stX1, bounds.getCenterY(), stX1 + (stX2 - stX1) * (1 - selected), bounds.getCenterY(), z, a * (1 - selected), r, g, b);
+            line(bufferBuilder, pose, stX1, bounds.getCenterY(), stX1 + (stX2 - stX1) * (1 - selected), bounds.getCenterY(), z, a * (1 - (float) Math.pow(selected, 1.8)), r, g, b);
         }
         line(bufferBuilder, pose, sX, downY, eX, Mth.lerp(selected, downY, upY), z, a, r, g, b);
         

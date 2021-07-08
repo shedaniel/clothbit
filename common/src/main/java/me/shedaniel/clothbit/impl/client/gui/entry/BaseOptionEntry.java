@@ -126,7 +126,7 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     
     @Override
     public int getItemHeight() {
-        return 24 + (int) Math.round(Math.pow(selected.progress(), 1) * 48);
+        return 24 + (int) Math.round(selected.progress() * 48);
     }
     
     public void addFieldName() {
