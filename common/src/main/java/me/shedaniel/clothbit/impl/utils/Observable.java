@@ -51,6 +51,11 @@ public class Observable<T> {
         this.value = value;
     }
     
+    public void setHidden(T value) {
+        this.value = value;
+        this.lastHash = Objects.hashCode(this.value);
+    }
+    
     public void update() {
         int hash = Objects.hashCode(this.value);
         if (this.lastHash != hash) {

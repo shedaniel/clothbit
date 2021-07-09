@@ -19,16 +19,21 @@
 
 package me.shedaniel.clothbit.impl.client.gui.widgets;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.math.Matrix4f;
+import me.shedaniel.clothbit.impl.client.gui.cursor.CursorType;
+import me.shedaniel.clothbit.impl.utils.Observable;
 import me.shedaniel.math.Point;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.resources.ResourceLocation;
 
 @Environment(EnvType.CLIENT)
-public abstract class Widget extends AbstractContainerEventHandler implements net.minecraft.client.gui.components.Widget {
+public abstract class Widget extends AbstractContainerEventHandler implements net.minecraft.client.gui.components.Widget, CursorTypeHandler {
     /**
      * The Minecraft Client instance
      */
@@ -67,5 +72,33 @@ public abstract class Widget extends AbstractContainerEventHandler implements ne
     
     public final void bindTexture(ResourceLocation texture) {
         minecraft.getTextureManager().bind(texture);
+    }
+    
+    @Override
+    public boolean handleCursorType(int mouseX, int mouseY, Observable<CursorType> type) {
+        if (useHandCursorIfHovered()) {
+            if (containsMouse(mouseX, mouseY)) {
+                type.set(CursorType.HAND);
+                return true;
+            }
+        }
+        
+        for (GuiEventListener child : this.children()) {
+            if (child instanceof CursorTypeHandler) {
+                if (((CursorTypeHandler) child).handleCursorType(mouseX, mouseY, type)) return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public void line(BufferBuilder bufferBuilder, Matrix4f pose, float x1, float y1, float x2, float y2, float a, float r, float g, float b) {
+        float z = getZ();
+        bufferBuilder.vertex(pose, x1, y1, z).color(r, g, b, a).endVertex();
+        bufferBuilder.vertex(pose, x2, y2, z).color(r, g, b, a).endVertex();
+    }
+    
+    public boolean useHandCursorIfHovered() {
+        return false;
     }
 }

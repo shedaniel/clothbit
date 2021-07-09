@@ -41,7 +41,7 @@ public class AbstractWidgetEntryComponent<T, W extends AbstractWidget> extends V
         ResetButtonComponent<T> resetButton = parent.getComponent(ResetButtonComponent.class);
         int extraOffset = 0;
         if (resetButton != null) extraOffset = resetButton.getBounds().width + 2;
-        widget.x = x + entryWidth - 100 - extraOffset + i;
+        widget.x = x + entryWidth - BUTTON_WIDTH - extraOffset + i;
         widget.y = y + i;
         bounds.setBounds(widget.x - i, widget.y - i, widget.getWidth() + i * 2, widget.getHeight() + i * 2);
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);

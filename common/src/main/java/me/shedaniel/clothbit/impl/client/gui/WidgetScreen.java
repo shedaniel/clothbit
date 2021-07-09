@@ -19,19 +19,31 @@
 
 package me.shedaniel.clothbit.impl.client.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import me.shedaniel.clothbit.impl.client.gui.cursor.CursorType;
 import me.shedaniel.clothbit.impl.client.gui.widgets.Widget;
+import me.shedaniel.clothbit.impl.utils.Observable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WidgetScreen extends Screen {
+    private final List<Observable<?>> observables = new ArrayList<>();
     protected List<Widget> widgets = new ArrayList<>();
+    protected Observable<CursorType> cursorType = observe(CursorType.ARROW);
     
     protected WidgetScreen(Component component) {
         super(component);
+        this.cursorType.addListener(type -> {
+            RenderSystem.recordRenderCall(() -> {
+                GLFW.glfwSetCursor(Minecraft.getInstance().getWindow().getWindow(), type.getCursor());
+            });
+        });
     }
     
     @Override
@@ -53,8 +65,34 @@ public class WidgetScreen extends Screen {
         this.widgets.add(widget);
     }
     
+    protected <R> Observable<R> observe(R value) {
+        Observable<R> observable = new Observable<>(value);
+        this.observables.add(observable);
+        return observable;
+    }
+    
+    @Override
+    public void removed() {
+        this.cursorType.setHidden(CursorType.ARROW);
+        RenderSystem.recordRenderCall(() -> {
+            GLFW.glfwSetCursor(Minecraft.getInstance().getWindow().getWindow(), CursorType.ARROW.getCursor());
+            this.cursorType.setHidden(CursorType.ARROW);
+        });
+    }
+    
     @Override
     public void render(PoseStack poseStack, int mouseX, int mouseY, float delta) {
+        this.cursorType.set(CursorType.ARROW);
+        for (Widget widget : this.widgets) {
+            if (widget.handleCursorType(mouseX, mouseY, this.cursorType)) {
+                break;
+            }
+        }
+        
+        for (Observable<?> observable : this.observables) {
+            observable.update();
+        }
+        
         super.render(poseStack, mouseX, mouseY, delta);
         for (Widget widget : this.widgets) {
             widget.render(poseStack, mouseX, mouseY, delta);

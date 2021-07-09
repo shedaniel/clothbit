@@ -28,28 +28,24 @@ import com.mojang.math.Matrix4f;
 import me.shedaniel.clothbit.impl.client.gui.entry.BaseOptionEntry;
 import me.shedaniel.math.Color;
 import me.shedaniel.math.Rectangle;
-import net.minecraft.util.Mth;
 import org.lwjgl.opengl.GL11;
 
-public class SandwichIconComponent<T> extends IconButtonComponent<T> {
-    public SandwichIconComponent(BaseOptionEntry<T> parent) {
+public abstract class AddIconComponent<T> extends IconButtonComponent<T> {
+    public AddIconComponent(BaseOptionEntry<T> parent) {
         super(parent);
     }
     
     @Override
     public void render(PoseStack poses, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, boolean componentHovered, float delta) {
-        bounds.setBounds(x + 1, y + 4, 12, 12);
+        ResetButtonComponent<T> resetButton = parent.getComponent(ResetButtonComponent.class);
+        int extraOffset = 0;
+        if (resetButton != null) extraOffset = resetButton.getBounds().width + 2;
+        bounds.setBounds(x + entryWidth - extraOffset - 14, y + 4, 12, 12);
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
-        renderSandwich(poses, bounds);
+        renderIcon(poses, bounds);
     }
     
-    @Override
-    protected void onClicked() {
-        boolean selected = parent.selected.targetBool();
-        this.parent.selected.setTo(!selected, selected ? 300 : 700);
-    }
-    
-    private void renderSandwich(PoseStack poses, Rectangle bounds) {
+    private void renderIcon(PoseStack poses, Rectangle bounds) {
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.disableAlphaTest();
@@ -66,23 +62,11 @@ public class SandwichIconComponent<T> extends IconButtonComponent<T> {
         float r = (color >> 16 & 255) / 255.0F;
         float g = (color >> 8 & 255) / 255.0F;
         float b = (color & 255) / 255.0F;
-        float selected = (float) this.parent.selected.progress();
-        float stX1 = bounds.x + 1.5f;
-        float stX2 = bounds.getMaxX() - 1.5f;
-        float crX1 = bounds.x + 2.5f;
-        float crX2 = bounds.getMaxX() - 2.5f;
+        float stX1 = bounds.x + 2.5f;
+        float stX2 = bounds.getMaxX() - 2.5f;
         
-        float upY = bounds.y + 2.5f;
-        float downY = bounds.getMaxY() - 2.5f;
-        
-        float sX = Mth.lerp(selected, stX1, crX1);
-        float eX = Mth.lerp(selected, stX2, crX2);
-        
-        line(bufferBuilder, pose, sX, upY, eX, Mth.lerp(selected, upY, downY), a, r, g, b);
-        if (selected < 0.99) {
-            line(bufferBuilder, pose, stX1, bounds.getCenterY(), stX1 + (stX2 - stX1) * (1 - selected), bounds.getCenterY(), a * (1 - (float) Math.pow(selected, 1.8)), r, g, b);
-        }
-        line(bufferBuilder, pose, sX, downY, eX, Mth.lerp(selected, downY, upY), a, r, g, b);
+        line(bufferBuilder, pose, bounds.x + 2.5f, bounds.getCenterY(), bounds.getMaxX() - 2.5f, bounds.getCenterY(), a, r, g, b);
+        line(bufferBuilder, pose, bounds.getCenterX(), bounds.y + 2.5f, bounds.getCenterX(), bounds.getMaxY() - 2.5f, a, r, g, b);
         
         tesselator.end();
         GL11.glDisable(GL11.GL_LINE_SMOOTH);

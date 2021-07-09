@@ -19,8 +19,10 @@
 
 package me.shedaniel.clothbit.impl.client.gui.entry.component.value;
 
+import me.shedaniel.clothbit.impl.client.gui.cursor.CursorType;
 import me.shedaniel.clothbit.impl.client.gui.entry.BaseOptionEntry;
 import me.shedaniel.clothbit.impl.client.gui.widgets.ClothEditBox;
+import me.shedaniel.clothbit.impl.utils.Observable;
 import net.minecraft.client.Minecraft;
 
 import java.util.function.Function;
@@ -44,5 +46,15 @@ public class TextFieldValueEntryComponent<T> extends AbstractWidgetEntryComponen
                 hasErrors = true;
             }
         });
+    }
+    
+    @Override
+    public boolean handleCursorType(int mouseX, int mouseY, Observable<CursorType> type) {
+        if (containsMouse(mouseX, mouseY)) {
+            type.set(CursorType.TEXT);
+            return true;
+        }
+        
+        return super.handleCursorType(mouseX, mouseY, type);
     }
 }

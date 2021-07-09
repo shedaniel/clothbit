@@ -22,33 +22,38 @@ package me.shedaniel.clothbit.impl.client.gui.entry.component;
 import com.mojang.blaze3d.vertex.PoseStack;
 import me.shedaniel.clothbit.impl.client.gui.entry.BaseOptionEntry;
 import me.shedaniel.clothbit.impl.client.gui.entry.EntryComponent;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.TextComponent;
+import me.shedaniel.math.Color;
 
-import java.util.Objects;
-
-public class ResetButtonComponent<T> extends EntryComponent<T> {
-    private final Button resetButton = addChild(new Button(0, 0, 46, 20, new TextComponent("Reset"), this::onResetPressed));
-    
-    public ResetButtonComponent(BaseOptionEntry<T> parent) {
+public abstract class IconButtonComponent<T> extends EntryComponent<T> {
+    public IconButtonComponent(BaseOptionEntry<T> parent) {
         super(parent);
-        listenValue(() -> resetButton.active = !Objects.equals(parent.getDefaultValue(), parent.value.get()));
-    }
-    
-    private void onResetPressed(Button button) {
-        parent.value.set(parent.getDefaultValue());
     }
     
     @Override
     public void render(PoseStack poses, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, boolean componentHovered, float delta) {
-        resetButton.x = x + entryWidth - 46;
-        resetButton.y = y;
-        bounds.setBounds(resetButton.x, resetButton.y, resetButton.getWidth(), resetButton.getHeight());
+        int color = getColor();
+        fillGradient(poses, bounds.x - 1, bounds.y - 1, bounds.getMaxX() + 1, bounds.getMaxY() + 1, color, color);
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
     }
     
     @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && containsMouse(mouseX, mouseY)) {
+            onClicked();
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+    
+    protected abstract void onClicked();
+    
+    private int getColor() {
+        int i = (int) (50 * hoveringColor.progress());
+        return Color.ofRGBA(255, 255, 255, i).getColor();
+    }
+    
+    @Override
     public boolean useHandCursorIfHovered() {
-        return resetButton.active;
+        return true;
     }
 }

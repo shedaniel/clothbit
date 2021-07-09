@@ -30,6 +30,7 @@ import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
 import me.shedaniel.clothbit.api.serializers.writer.RootValueWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.impl.client.gui.entry.BaseOptionEntry;
+import me.shedaniel.clothbit.impl.client.gui.entry.component.AddIconComponent;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.value.ArrayValueEntryComponent;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.value.TextFieldValueEntryComponent;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -238,6 +239,12 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
             // Add array entry
             primitiveEntry(values, entry -> {
                 entry.addComponent(new ArrayValueEntryComponent<>(entry, entries));
+                entry.addComponent(new AddIconComponent<T>(entry) {
+                    @Override
+                    protected void onClicked() {
+                        
+                    }
+                });
             });
         }
         
