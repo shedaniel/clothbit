@@ -54,12 +54,11 @@ public class SandwichIconComponent<T> extends IconButtonComponent<T> {
         RenderSystem.enableBlend();
         RenderSystem.disableAlphaTest();
         RenderSystem.defaultBlendFunc();
-        GL11.glEnable(GL11.GL_LINE_SMOOTH);
-        RenderSystem.lineWidth((float) minecraft.getWindow().getGuiScale() * 1.2f);
+        float thickness = 1.2f;
         RenderSystem.shadeModel(7425);
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tesselator.getBuilder();
-        bufferBuilder.begin(GL11.GL_LINES, DefaultVertexFormat.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f pose = poses.last().pose();
         int color = getColor();
         float a = (color >> 24 & 255) / 255.0F;
@@ -78,14 +77,13 @@ public class SandwichIconComponent<T> extends IconButtonComponent<T> {
         float sX = Mth.lerp(selected, stX1, crX1);
         float eX = Mth.lerp(selected, stX2, crX2);
         
-        line(bufferBuilder, pose, sX, upY, eX, Mth.lerp(selected, upY, downY), a, r, g, b);
+        line(bufferBuilder, pose, sX, upY, eX, Mth.lerp(selected, upY, downY), thickness, thickness, a, r, g, b);
         if (selected < 0.99) {
-            line(bufferBuilder, pose, stX1, bounds.getCenterY(), stX1 + (stX2 - stX1) * (1 - selected), bounds.getCenterY(), a * (1 - (float) Math.pow(selected, 1.8)), r, g, b);
+            line(bufferBuilder, pose, stX1, bounds.getCenterY(), stX1 + (stX2 - stX1) * (1 - selected), bounds.getCenterY(), thickness, thickness, a * (1 - (float) Math.pow(selected, 1.8)), r, g, b);
         }
-        line(bufferBuilder, pose, sX, downY, eX, Mth.lerp(selected, downY, upY), a, r, g, b);
+        line(bufferBuilder, pose, sX, downY, eX, Mth.lerp(selected, downY, upY), thickness, thickness, a, r, g, b);
         
         tesselator.end();
-        GL11.glDisable(GL11.GL_LINE_SMOOTH);
         RenderSystem.shadeModel(7424);
         RenderSystem.disableBlend();
         RenderSystem.enableAlphaTest();

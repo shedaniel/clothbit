@@ -50,12 +50,11 @@ public abstract class AddIconComponent<T> extends IconButtonComponent<T> {
         RenderSystem.enableBlend();
         RenderSystem.disableAlphaTest();
         RenderSystem.defaultBlendFunc();
-        GL11.glEnable(GL11.GL_LINE_SMOOTH);
-        RenderSystem.lineWidth((float) minecraft.getWindow().getGuiScale() * 1.2f);
+        float thickness = 1.2f;
         RenderSystem.shadeModel(7425);
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tesselator.getBuilder();
-        bufferBuilder.begin(GL11.GL_LINES, DefaultVertexFormat.POSITION_COLOR);
+        bufferBuilder.begin(GL11.GL_TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
         Matrix4f pose = poses.last().pose();
         int color = getColor();
         float a = (color >> 24 & 255) / 255.0F;
@@ -65,11 +64,10 @@ public abstract class AddIconComponent<T> extends IconButtonComponent<T> {
         float stX1 = bounds.x + 2.5f;
         float stX2 = bounds.getMaxX() - 2.5f;
         
-        line(bufferBuilder, pose, bounds.x + 2.5f, bounds.getCenterY(), bounds.getMaxX() - 2.5f, bounds.getCenterY(), a, r, g, b);
-        line(bufferBuilder, pose, bounds.getCenterX(), bounds.y + 2.5f, bounds.getCenterX(), bounds.getMaxY() - 2.5f, a, r, g, b);
+        line(bufferBuilder, pose, bounds.x + 2.5f, bounds.getCenterY(), bounds.getMaxX() - 2.5f, bounds.getCenterY(), thickness, thickness, a, r, g, b);
+        line(bufferBuilder, pose, bounds.getCenterX(), bounds.y + 2.5f, bounds.getCenterX(), bounds.getMaxY() - 2.5f, thickness, thickness, a, r, g, b);
         
         tesselator.end();
-        GL11.glDisable(GL11.GL_LINE_SMOOTH);
         RenderSystem.shadeModel(7424);
         RenderSystem.disableBlend();
         RenderSystem.enableAlphaTest();

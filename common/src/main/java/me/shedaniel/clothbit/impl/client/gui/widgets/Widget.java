@@ -19,7 +19,7 @@
 
 package me.shedaniel.clothbit.impl.client.gui.widgets;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Matrix4f;
 import me.shedaniel.clothbit.impl.client.gui.cursor.CursorType;
 import me.shedaniel.clothbit.impl.utils.Observable;
@@ -31,6 +31,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 @Environment(EnvType.CLIENT)
 public abstract class Widget extends AbstractContainerEventHandler implements net.minecraft.client.gui.components.Widget, CursorTypeHandler {
@@ -92,10 +93,22 @@ public abstract class Widget extends AbstractContainerEventHandler implements ne
         return false;
     }
     
-    public void line(BufferBuilder bufferBuilder, Matrix4f pose, float x1, float y1, float x2, float y2, float a, float r, float g, float b) {
+    public void line(VertexConsumer vertexConsumer, Matrix4f pose, float x1, float y1, float x2, float y2, float t1, float t2, float alpha, float red, float green, float blue) {
+        float angle = (float) Mth.atan2(y2 - y1, x2 - x1);
+        float sinA = Mth.sin(angle);
+        float cosA = Mth.cos(angle);
+        float t2sina1 = t1 / 2 * sinA;
+        float t2cosa1 = t1 / 2 * cosA;
+        float t2sina2 = t2 / 2 * sinA;
+        float t2cosa2 = t2 / 2 * cosA;
         float z = getZ();
-        bufferBuilder.vertex(pose, x1, y1, z).color(r, g, b, a).endVertex();
-        bufferBuilder.vertex(pose, x2, y2, z).color(r, g, b, a).endVertex();
+        
+        vertexConsumer.vertex(pose, x1 + t2sina1, y1 - t2cosa1, z).color(red, green, blue, alpha).endVertex();
+        vertexConsumer.vertex(pose, x2 - t2sina2, y2 + t2cosa2, z).color(red, green, blue, alpha).endVertex();
+        vertexConsumer.vertex(pose, x2 + t2sina2, y2 - t2cosa2, z).color(red, green, blue, alpha).endVertex();
+        vertexConsumer.vertex(pose, x2 - t2sina2, y2 + t2cosa2, z).color(red, green, blue, alpha).endVertex();
+        vertexConsumer.vertex(pose, x1 + t2sina1, y1 - t2cosa1, z).color(red, green, blue, alpha).endVertex();
+        vertexConsumer.vertex(pose, x1 - t2sina1, y1 + t2cosa1, z).color(red, green, blue, alpha).endVertex();
     }
     
     public boolean useHandCursorIfHovered() {
