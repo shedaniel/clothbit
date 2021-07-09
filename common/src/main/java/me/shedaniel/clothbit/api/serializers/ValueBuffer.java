@@ -20,8 +20,10 @@
 package me.shedaniel.clothbit.api.serializers;
 
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.NonClosingValueWriter;
 import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
@@ -224,9 +226,10 @@ public class ValueBuffer implements ValueReader, ValueWriter {
     }
     
     @Override
-    public void writeArray(Consumer<ValueWriter> consumer) {
+    public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
         ValueBuffer buffer = new ValueBuffer();
-        consumer.accept(buffer);
+        NonClosingValueWriter valueWriter = new NonClosingValueWriter(buffer);
+        consumer.accept(type -> valueWriter);
         List<Object> data = new ArrayList<>(buffer.stack);
         buffer.close();
         stack.push(data);

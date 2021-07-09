@@ -43,7 +43,7 @@ public class CollectionOptionType<T> implements OptionType<Collection<T>> {
         } else {
             writer.writeArray(arrayWriter -> {
                 for (T child : value) {
-                    this.parent.write(child, arrayWriter, ctx);
+                    this.parent.withValue(child).writeWithType(arrayWriter, ctx);
                 }
             });
         }

@@ -20,6 +20,7 @@
 package me.shedaniel.clothbit.impl.serializers.json5;
 
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
@@ -113,7 +114,7 @@ public class Json5FormatEncoder implements FormatEncoder<Writer> {
         }
         
         @Override
-        public void writeArray(Consumer<ValueWriter> consumer) {
+        public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
             
         }
         

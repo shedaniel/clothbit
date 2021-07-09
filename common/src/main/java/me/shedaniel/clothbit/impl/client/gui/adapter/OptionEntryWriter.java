@@ -19,7 +19,7 @@
 
 package me.shedaniel.clothbit.impl.client.gui.adapter;
 
-import com.google.common.base.Suppliers;
+import com.mojang.datafixers.util.Pair;
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
@@ -31,8 +31,10 @@ import me.shedaniel.clothbit.api.serializers.writer.RootValueWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.impl.client.gui.entry.BaseOptionEntry;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.AddIconComponent;
+import me.shedaniel.clothbit.impl.client.gui.entry.component.DeleteIconComponent;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.value.ArrayValueEntryComponent;
 import me.shedaniel.clothbit.impl.client.gui.entry.component.value.TextFieldValueEntryComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class OptionEntryWriter implements OptionWriter<Option<?>> {
     private final String id;
@@ -121,6 +124,7 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         public <R> void primitiveEntry(R value, Consumer<BaseOptionEntry<R>> action) {
             entry(value, entry -> {
                 if (isRoot()) {
+                    entry.addSandwich();
                     entry.addFieldName((Option<R>) this.option);
                 }
                 entry.addResetButton();
@@ -213,7 +217,7 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         }
         
         @Override
-        public void writeArray(Consumer<ValueWriter> consumer) {
+        public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
             // Buffer all the values to get the value in object form
             ValueBuffer buffer = new ValueBuffer();
             buffer.writeArray(consumer);
@@ -225,26 +229,52 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
                     AnyOptionType.getInstance(), this.parents);
             buffer.writeTo(new NothingValueWriter() {
                 @Override
-                public void writeArray(Consumer<ValueWriter> consumer) {
-                    consumer.accept(valueWriter);
+                public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
+                    consumer.accept(elementType -> valueWriter);
                 }
             }, ctx);
             
+            Consumer<BaseOptionEntry<T>>[] delete = new Consumer[1];
+            Function<BaseOptionEntry<T>, Integer>[] indexGetter = new Function[1];
+            
             // Apply field names
-            for (int i = 0; i < entries.size(); i++) {
-                BaseOptionEntry<T> entry = entries.get(i);
-                entry.addFieldName(Suppliers.ofInstance(new TranslatableComponent("text.clothbit.array.index", String.valueOf(i + 1))));
+            for (BaseOptionEntry<T> entry : entries) {
+                entry.addComponent(new DeleteIconComponent<T>(entry) {
+                    @Override
+                    protected void onClicked() {
+                        delete[0].accept(entry);
+                    }
+                });
+                Pair<Integer, Component>[] last = new Pair[]{new Pair<Integer, Component>(-1, null)};
+                entry.addFieldName(() -> {
+                    int index = indexGetter[0].apply(entry);
+                    if (last[0].getFirst().equals(index)) {
+                        return last[0].getSecond();
+                    }
+                    last[0] = new Pair<>(index, new TranslatableComponent("text.clothbit.array.index", String.valueOf(index + 1)));
+                    return last[0].getSecond();
+                });
             }
             
             // Add array entry
             primitiveEntry(values, entry -> {
-                entry.addComponent(new ArrayValueEntryComponent<>(entry, entries));
+                ArrayValueEntryComponent<T> component = new ArrayValueEntryComponent<>(entry, entries);
+                entry.addComponent(component);
                 entry.addComponent(new AddIconComponent<T>(entry) {
                     @Override
                     protected void onClicked() {
-                        
+//                        BaseOptionEntry<T>[] newEntry = new BaseOptionEntry[]{null};
+//                        OptionValueWriter<T> valueWriter = new OptionValueWriter<>(id, e -> newEntry[0] = e, ctx, null,
+//                                AnyOptionType.getInstance(), parents);
+//                        type.write(type.getDefaultValue(), valueWriter);
                     }
                 });
+                delete[0] = valueEntry -> {
+                    component.children.remove(valueEntry);
+                    component.drawables.remove(valueEntry);
+                    component.entries.remove(valueEntry);
+                };
+                indexGetter[0] = component.entries::indexOf;
             });
         }
         

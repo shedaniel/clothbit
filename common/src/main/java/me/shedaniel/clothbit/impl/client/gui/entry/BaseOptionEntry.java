@@ -20,7 +20,6 @@
 package me.shedaniel.clothbit.impl.client.gui.entry;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import me.shedaniel.clothbit.api.client.gui.ScissorsStack;
 import me.shedaniel.clothbit.api.options.Option;
@@ -52,8 +51,6 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     
     protected final Rectangle bounds = new Rectangle();
     public final Option<?>[] parents;
-    private final Supplier<Integer> extraHeight = extraHeightSupplier(false);
-    private final Supplier<Integer> extraHeightExpended = extraHeightSupplier(true);
     private final List<GuiEventListener> children = new ArrayList<>();
     private final List<Consumer<ListWidget<BaseOptionEntry<T>>>> onParentUpdate = new ArrayList<>();
     private final List<Observable<?>> observables = new ArrayList<>();
@@ -61,6 +58,7 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     public final T originalValue;
     public final Observable<T> value;
     public final Observable<Boolean> hovered = observe(false);
+    public final BooleanAnimator hoveredProgress = animate(false);
     public final BooleanAnimator selected = animate(false);
     public ValueEntryComponent<T> valueHolder;
     private final List<EntryComponent<T>> entryComponents = new ArrayList<>();
@@ -73,6 +71,7 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
         this.parents = parents;
         this.value = observe(type.copy(value, ctx));
         this.valueHolder = new EntryValueEntryComponent<>(this);
+        this.hovered.addListener(hovered -> hoveredProgress.setTo(hovered, hovered ? 100 : 300));
     }
     
     public Rectangle getBounds() {
@@ -84,15 +83,13 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
         return bounds.contains(mouseX, mouseY);
     }
     
-    private Supplier<Integer> extraHeightSupplier(boolean expended) {
-        return Suppliers.memoize(() -> {
-            int max = 0;
-            for (EntryComponent<T> component : this.entryComponents) {
-                int height = component.getExtraHeight(expended);
-                if (height > max) max = height;
-            }
-            return max;
-        });
+    private int extraHeight(boolean expended) {
+        int max = 0;
+        for (EntryComponent<T> component : this.entryComponents) {
+            int height = component.getExtraHeight(expended);
+            if (height > max) max = height;
+        }
+        return max;
     }
     
     public <R extends GuiEventListener> R addChild(R listener) {
@@ -157,7 +154,6 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     public void render(PoseStack matrices, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
         this.bounds.setBounds(x, y, entryWidth, entryHeight);
         ScissorsStack.getInstance().push(this.bounds).applyStack();
-        //        fill(matrices, 0, 0, 10000, 10000, 0x20FFFFFF);
         this.hovered.set(isHovered);
         
         for (Observable<?> observable : this.observables) {
@@ -176,16 +172,18 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     
     @Override
     public int getItemHeight() {
-        return 24 + extraHeight.get() + (int) Math.round(selected.progress() * extraHeightExpended.get());
+        return 24 + extraHeight(false) + (int) Math.round(selected.progress() * extraHeight(true));
+    }
+    
+    public void addSandwich() {
+        addComponent(new SandwichIconComponent<>(this));
     }
     
     public void addFieldName(Option<T> option) {
-        addComponent(new SandwichIconComponent<>(this));
         addComponent(new FieldNameComponent<>(option, this));
     }
     
     public void addFieldName(Supplier<Component> fieldName) {
-        addComponent(new SandwichIconComponent<>(this));
         addComponent(new FieldNameComponent<>(fieldName, this));
     }
     

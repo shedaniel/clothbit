@@ -22,6 +22,7 @@ package me.shedaniel.clothbit.impl.serializers.gson;
 import com.google.common.base.MoreObjects;
 import com.google.gson.stream.JsonWriter;
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
@@ -55,7 +56,7 @@ public class GsonFormatEncoder implements FormatEncoder<Writer> {
     private static class JsonValueWriter implements ValueWriter {
         private final JsonWriter writer;
         @Nullable
-        private final Task onClose;
+        private Task onClose;
         
         public JsonValueWriter(JsonWriter writer, @Nullable Task onClose) {
             this.writer = writer;
@@ -100,10 +101,13 @@ public class GsonFormatEncoder implements FormatEncoder<Writer> {
         }
         
         @Override
-        public void writeArray(Consumer<ValueWriter> consumer) {
+        public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
             call(() -> {
                 this.writer.beginArray();
-                consumer.accept(this);
+                Task tmp = this.onClose;
+                this.onClose = null;
+                consumer.accept(type -> this);
+                this.onClose = tmp;
                 this.writer.endArray();
             });
         }

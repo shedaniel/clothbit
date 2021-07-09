@@ -19,6 +19,7 @@
 
 package me.shedaniel.clothbit.api.options;
 
+import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import me.shedaniel.clothbit.impl.options.OptionValueImpl;
 import org.jetbrains.annotations.ApiStatus;
@@ -46,5 +47,11 @@ public interface OptionValue<T> {
     
     default void write(ValueWriter writer, OptionTypesContext ctx) {
         getType().write(getValue(), writer, ctx);
+    }
+    
+    default void writeWithType(OptionWriter<? super OptionType<T>> writer, OptionTypesContext ctx) {
+        try (ValueWriter valueWriter = writer.forOption(getType())) {
+            getType().write(getValue(), valueWriter, ctx);
+        }
     }
 }

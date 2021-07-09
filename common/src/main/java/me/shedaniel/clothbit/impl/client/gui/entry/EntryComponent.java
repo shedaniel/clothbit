@@ -34,10 +34,10 @@ import java.util.function.Consumer;
 public abstract class EntryComponent<T> extends WidgetWithBounds {
     protected final BaseOptionEntry<T> parent;
     protected final Rectangle bounds = new Rectangle();
-    protected final List<GuiEventListener> children = new ArrayList<>();
+    public final List<GuiEventListener> children = new ArrayList<>();
     private final List<Observable<?>> observables = new ArrayList<>();
     private final List<Animator> animators = new ArrayList<>();
-    private final List<net.minecraft.client.gui.components.Widget> drawables = new ArrayList<>();
+    public final List<net.minecraft.client.gui.components.Widget> drawables = new ArrayList<>();
     public final Observable<Boolean> hovered = observe(false);
     public final BooleanAnimator hoveringColor = animate(false);
     

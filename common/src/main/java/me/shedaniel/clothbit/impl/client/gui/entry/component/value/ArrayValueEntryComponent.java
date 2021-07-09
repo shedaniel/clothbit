@@ -26,7 +26,7 @@ import me.shedaniel.clothbit.impl.client.gui.entry.ValueEntryComponent;
 import java.util.List;
 
 public class ArrayValueEntryComponent<T> extends ValueEntryComponent<T> {
-    private final List<BaseOptionEntry<T>> entries;
+    public final List<BaseOptionEntry<T>> entries;
     
     public ArrayValueEntryComponent(BaseOptionEntry<T> parent, List<BaseOptionEntry<T>> entries) {
         super(parent);

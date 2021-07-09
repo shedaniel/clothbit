@@ -47,7 +47,8 @@ public class ArrayOptionType<T> implements OptionType<Object> {
             writer.writeArray(arrayWriter -> {
                 Preconditions.checkArgument(value.getClass().isArray(), value + " is not an array");
                 for (int i = 0; i < Array.getLength(value); i++) {
-                    this.parent.write((T) Array.get(value, i), arrayWriter, ctx);
+                    this.parent.withValue((T) Array.get(value, i))
+                            .writeWithType(arrayWriter, ctx);
                 }
             });
         }

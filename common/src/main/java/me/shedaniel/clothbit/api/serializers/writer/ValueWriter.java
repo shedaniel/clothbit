@@ -69,7 +69,7 @@ public interface ValueWriter extends Closeable {
     
     void writeObject(Consumer<OptionWriter<Option<?>>> consumer);
     
-    void writeArray(Consumer<ValueWriter> consumer);
+    void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer);
     
     @Override
     void close();
@@ -115,7 +115,7 @@ public interface ValueWriter extends Closeable {
             case ARRAY:
                 writeArray(writer -> {
                     reader.readArray(valueReader -> {
-                        writer.writeFrom(valueReader, ctx);
+                        writer.forOption(AnyOptionType.getInstance()).writeFrom(valueReader, ctx);
                     });
                 });
                 return;

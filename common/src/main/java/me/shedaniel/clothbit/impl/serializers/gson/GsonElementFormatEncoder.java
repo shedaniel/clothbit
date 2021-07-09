@@ -21,6 +21,7 @@ package me.shedaniel.clothbit.impl.serializers.gson;
 
 import com.google.gson.*;
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
@@ -78,9 +79,10 @@ public class GsonElementFormatEncoder implements FormatEncoder<Consumer<JsonElem
         }
         
         @Override
-        public void writeArray(Consumer<ValueWriter> consumer) {
+        public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
             JsonArray value = new JsonArray();
-            consumer.accept(new ArrayGsonElementValueWriter(value));
+            ArrayGsonElementValueWriter valueWriter = new ArrayGsonElementValueWriter(value);
+            consumer.accept(type -> valueWriter);
             accept(value);
         }
         

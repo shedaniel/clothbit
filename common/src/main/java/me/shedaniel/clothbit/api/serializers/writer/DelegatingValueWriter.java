@@ -20,6 +20,7 @@
 package me.shedaniel.clothbit.api.serializers.writer;
 
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -92,7 +93,7 @@ public abstract class DelegatingValueWriter implements ValueWriter {
     }
     
     @Override
-    public void writeArray(Consumer<ValueWriter> consumer) {
+    public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
         this.parent.writeArray(consumer);
     }
     
