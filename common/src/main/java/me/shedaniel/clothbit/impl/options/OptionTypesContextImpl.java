@@ -20,7 +20,6 @@
 package me.shedaniel.clothbit.impl.options;
 
 import com.google.gson.reflect.TypeToken;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
@@ -31,20 +30,19 @@ import me.shedaniel.clothbit.api.options.type.adapter.extended.EnumOptionTypeAda
 import me.shedaniel.clothbit.api.options.type.adapter.extended.MapOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.reflect.ReflectOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.simple.AnyOptionTypeAdapter;
-import me.shedaniel.clothbit.api.options.type.adapter.simple.MappingOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.simple.PrimitiveOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.simple.SimpleOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.simple.BooleanOptionType;
 import me.shedaniel.clothbit.api.options.type.simple.CharacterOptionType;
 import me.shedaniel.clothbit.api.options.type.simple.StringOptionType;
 import me.shedaniel.clothbit.api.options.type.simple.number.*;
-import net.minecraft.nbt.TagParser;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.Tag;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class OptionTypesContextImpl implements OptionTypesContext {
@@ -69,14 +67,6 @@ public class OptionTypesContextImpl implements OptionTypesContext {
         this.adapters.add(new NullSafetyAdapter(new PrimitiveOptionTypeAdapter<>(CharacterOptionType::new, Character.TYPE, Character.class)));
         this.adapters.add(new NullSafetyAdapter(new SimpleOptionTypeAdapter<>(() -> new NumberOptionType<>(num -> num == null || num instanceof BigInteger ? num : new BigInteger(num.toString())), BigInteger.class)));
         this.adapters.add(new NullSafetyAdapter(new SimpleOptionTypeAdapter<>(() -> new NumberOptionType<>(num -> num == null || num instanceof BigDecimal ? num : new BigDecimal(num.toString())), BigDecimal.class)));
-        this.adapters.add(new NullSafetyAdapter(new MappingOptionTypeAdapter<>(String.class, ResourceLocation.class, ResourceLocation::new, Objects::toString)));
-        this.adapters.add(new NullSafetyAdapter(new MappingOptionTypeAdapter<>(String.class, Tag.class, s -> {
-            try {
-                return (Tag) TagParser.parseTag(s);
-            } catch (CommandSyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        }, Objects::toString)));
         this.adapters.add(new NullSafetyAdapter(new EnumOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new ArrayOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new CollectionOptionTypeAdapter()));

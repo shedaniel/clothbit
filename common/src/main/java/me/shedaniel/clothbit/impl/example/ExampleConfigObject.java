@@ -21,6 +21,7 @@ package me.shedaniel.clothbit.impl.example;
 
 import me.shedaniel.clothbit.api.annotations.Config;
 import me.shedaniel.clothbit.api.config.formats.GsonConfigFormatResolver;
+import net.minecraft.resources.ResourceLocation;
 
 @Config(name = "bruh.json", format = GsonConfigFormatResolver.class)
 public class ExampleConfigObject {
@@ -29,4 +30,5 @@ public class ExampleConfigObject {
     public String thing;
     public boolean[] bool = new boolean[]{false, true};
     public Object[] yes = new Object[]{false, true};
+    public ResourceLocation id = new ResourceLocation("ues");
 }

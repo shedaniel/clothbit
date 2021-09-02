@@ -47,9 +47,9 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     private final OptionTypesContext optionTypesContext;
     private T value;
     
-    public ConfigManagerImpl(Class<T> type, Properties<T> properties) {
+    public ConfigManagerImpl(Class<T> type, BuilderImpl<T> builder) {
         this.type = type;
-        this.id = properties.getId();
+        this.id = builder.getId();
         this.configAnnotation = Objects.requireNonNull(type.getAnnotation(Config.class),
                 "Expected @Config annotation on " + type);
         try {
@@ -57,14 +57,10 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
         } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-        this.optionTypesContext = properties.getConstructingContext();
+        this.optionTypesContext = builder.getConstructingContext();
         this.optionType = this.optionTypesContext.resolveType(this.type);
         load();
         save();
-    }
-    
-    public static <T> ConfigManagerImpl<T> register(Class<T> type, Properties<T> properties) {
-        return (ConfigManagerImpl<T>) INSTANCES.computeIfAbsent(type, t -> new ConfigManagerImpl(t, properties));
     }
     
     public static <T> ConfigManagerImpl<T> get(Class<T> type) {
@@ -98,17 +94,28 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
         return screen.get();
     }
     
-    public static class PropertiesImpl<T> implements Properties<T> {
+    public static class BuilderImpl<T> implements Builder<T> {
+        private final Class<T> type;
         private final String id;
         private final OptionTypesContext optionTypesContext = OptionTypesContext.defaultContext();
         
-        public PropertiesImpl(String id) {
+        public BuilderImpl(Class<T> type, String id) {
+            this.type = type;
             this.id = id;
         }
         
         @Override
-        public Properties<T> adapter(OptionTypeAdapter adapter) {
+        public Builder<T> adapter(OptionTypeAdapter adapter) {
             this.optionTypesContext.addAdapter(adapter);
+            return this;
+        }
+        
+        @Override
+        public Builder<T> adapters(OptionTypeAdapter... adapters) {
+            for (OptionTypeAdapter adapter : adapters) {
+                this.optionTypesContext.addAdapter(adapter);
+            }
+            
             return this;
         }
         
@@ -117,9 +124,13 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
             return id;
         }
         
-        @Override
         public OptionTypesContext getConstructingContext() {
             return optionTypesContext;
+        }
+        
+        @Override
+        public ConfigManager<T> build() {
+            return (ConfigManagerImpl<T>) INSTANCES.computeIfAbsent(type, $ -> new ConfigManagerImpl<>(type, this));
         }
     }
 }

@@ -20,7 +20,6 @@
 package me.shedaniel.clothbit.api.config;
 
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.impl.config.ConfigManagerImpl;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -29,8 +28,8 @@ import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.NonExtendable
 public interface ConfigManager<T> {
-    static <T> ConfigManager<T> register(Class<T> type, Properties<T> properties) {
-        return ConfigManagerImpl.register(type, properties);
+    static <T> ConfigManager.Builder<T> builder(Class<T> type, String id) {
+        return new ConfigManagerImpl.BuilderImpl<>(type, id);
     }
     
     static <T> ConfigManager<T> get(Class<T> type) {
@@ -47,15 +46,13 @@ public interface ConfigManager<T> {
     Screen getOptionsScreen(Screen parent);
     
     @ApiStatus.NonExtendable
-    interface Properties<T> {
-        static <T> Properties<T> of(String id) {
-            return new ConfigManagerImpl.PropertiesImpl<>(id);
-        }
+    interface Builder<T> {
+        Builder<T> adapter(OptionTypeAdapter adapter);
         
-        Properties<T> adapter(OptionTypeAdapter adapter);
-    
+        Builder<T> adapters(OptionTypeAdapter... adapters);
+        
         String getId();
-    
-        OptionTypesContext getConstructingContext();
+        
+        ConfigManager<T> build();
     }
 }

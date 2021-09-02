@@ -17,13 +17,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.test;
+package me.shedaniel.clothbit.api.options;
 
-import me.shedaniel.clothbit.api.annotations.Config;
-import me.shedaniel.clothbit.api.config.formats.GsonConfigFormatResolver;
-
-@Config(name = "bruh.json", format = GsonConfigFormatResolver.class)
-public class TestConfigType {
-    public int age = 10;
-    public boolean[] bool = new boolean[]{false, true};
+public interface OptionPropertyProvider {
+    <S> S getProperty(OptionProperty<S> property);
 }

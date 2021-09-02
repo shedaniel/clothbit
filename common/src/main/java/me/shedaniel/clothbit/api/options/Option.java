@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * @param <T> the type of option
  */
 @ApiStatus.NonExtendable
-public interface Option<T> {
+public interface Option<T> extends OptionPropertyExtension {
     static <T> Option.Builder<T> builder(OptionType<T> type, String name) {
         return new OptionImpl.Builder<>(type, name);
     }
@@ -45,27 +45,12 @@ public interface Option<T> {
     @Nullable
     T getDefaultValue();
     
-    <S> S getProperty(OptionProperty<S> property);
-    
-    @Nullable
-    default String getComments() {
-        return getProperty(CommentsOptionProperty.property());
-    }
-    
-    default NullableOptionProperty.HandleMode getNullable() {
-        return getProperty(NullableOptionProperty.property());
-    }
-    
     default OptionPair<T> withValue(T value) {
         return OptionPair.of(this, value);
     }
     
     default OptionPair<T> withDefaultValue() {
         return withValue(getDefaultValue());
-    }
-    
-    default boolean isNullable() {
-        return getNullable() != NullableOptionProperty.HandleMode.DENY_NULL;
     }
     
     @ApiStatus.NonExtendable

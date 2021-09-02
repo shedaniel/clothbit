@@ -17,10 +17,23 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.test;
+package me.shedaniel.clothbit.api.options;
 
-public class TestConfig {
-    public static void main(String[] args) {
-        
+import me.shedaniel.clothbit.api.options.property.CommentsOptionProperty;
+import me.shedaniel.clothbit.api.options.property.NullableOptionProperty;
+import org.jetbrains.annotations.Nullable;
+
+public interface OptionPropertyExtension extends OptionPropertyProvider {
+    @Nullable
+    default String getComments() {
+        return getProperty(CommentsOptionProperty.property());
+    }
+    
+    default NullableOptionProperty.HandleMode getNullable() {
+        return getProperty(NullableOptionProperty.property());
+    }
+    
+    default boolean isNullable() {
+        return getNullable() != NullableOptionProperty.HandleMode.DENY_NULL;
     }
 }

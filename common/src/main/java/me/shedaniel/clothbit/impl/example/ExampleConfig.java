@@ -20,12 +20,15 @@
 package me.shedaniel.clothbit.impl.example;
 
 import me.shedaniel.clothbit.api.config.ConfigManager;
+import me.shedaniel.clothbit.api.options.minecraft.MinecraftOptionTypeAdapters;
 
 import java.util.Arrays;
 
 public class ExampleConfig {
     public static void initialize() {
-        ConfigManager<ExampleConfigObject> manager = ConfigManager.register(ExampleConfigObject.class, ConfigManager.Properties.of("clothbit.example"));
+        ConfigManager<ExampleConfigObject> manager = ConfigManager.builder(ExampleConfigObject.class, "clothbit.example")
+                .adapters(MinecraftOptionTypeAdapters.all())
+                .build();
         System.out.println(Arrays.toString(manager.get().bool));
     }
 }
