@@ -26,7 +26,7 @@ import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
-import me.shedaniel.clothbit.api.options.type.extended.MapOptionType;
+import me.shedaniel.clothbit.api.options.type.extended.OptionedMapOptionType;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -45,7 +45,7 @@ public class ReflectOptionTypeAdapter implements OptionTypeAdapter {
             throw new RuntimeException("Expected constructor with no parameters!", exception);
         }
         try {
-            List<Pair<Option<?>, Field>> options = new ArrayList<>();
+            List<Pair<Option<Object>, Field>> options = new ArrayList<>();
             for (Field field : rawType.getDeclaredFields()) {
                 if (!field.isSynthetic() && !Modifier.isStatic(field.getModifiers())
                     && !Modifier.isFinal(field.getModifiers()) && !Modifier.isTransient(field.getModifiers()) &&
@@ -84,14 +84,14 @@ public class ReflectOptionTypeAdapter implements OptionTypeAdapter {
                             }
                         });
                     }
-                    options.add(Pair.of(option.build(), field));
+                    options.add(Pair.of((Option<Object>) option.build(), field));
                 }
             }
-            List<Option<?>> optionList = options.stream().map(Pair::getFirst).collect(Collectors.toList());
-            return Optional.of(new MapOptionType(optionList).map(values -> {
+            List<Option<Object>> optionList = options.stream().map(Pair::getFirst).collect(Collectors.toList());
+            return Optional.of(new OptionedMapOptionType<>(optionList).map(values -> {
                 try {
                     R instance = (R) constructor.newInstance();
-                    for (Pair<Option<?>, Field> pair : options) {
+                    for (Pair<Option<Object>, Field> pair : options) {
                         Object value = values.get(pair.getFirst().getName());
                         if (value != null) {
                             pair.getSecond().set(instance, value);
@@ -104,7 +104,7 @@ public class ReflectOptionTypeAdapter implements OptionTypeAdapter {
             }, instance -> {
                 Map<String, Object> values = new HashMap<>();
                 try {
-                    for (Pair<Option<?>, Field> pair : options) {
+                    for (Pair<Option<Object>, Field> pair : options) {
                         values.put(pair.getFirst().getName(), pair.getSecond().get(instance));
                     }
                     return values;

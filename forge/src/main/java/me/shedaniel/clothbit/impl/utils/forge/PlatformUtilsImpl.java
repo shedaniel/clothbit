@@ -17,14 +17,16 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.impl.utils.fabric;
+package me.shedaniel.clothbit.impl.utils.forge;
 
-import net.fabricmc.loader.api.FabricLoader;
+import me.shedaniel.clothbit.impl.utils.PlatformUtils;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.nio.file.Path;
 
-public class ConfigFolderImplImpl {
-    public static Path getConfigFolder() {
-        return FabricLoader.getInstance().getConfigDir();
+public class PlatformUtilsImpl implements PlatformUtils {
+    @Override
+    public Path getConfigFolder() {
+        return FMLPaths.CONFIGDIR.get();
     }
 }

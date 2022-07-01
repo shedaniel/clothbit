@@ -37,7 +37,11 @@ public abstract class DeleteIconComponent<T> extends IconButtonComponent<T> {
     
     @Override
     public void render(PoseStack poses, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, boolean componentHovered, float delta) {
-        bounds.setBounds(x + 1, y + 4, 12, 12);
+        Rectangle rectangle = parent.valueHolder.getBounds();
+        FieldNameComponent<T> fieldName = parent.getComponent(FieldNameComponent.class);
+        int xPos = x;
+        if (fieldName != null) xPos = fieldName.getBounds().getMaxX() + 4;
+        bounds.setBounds(xPos, y + 4, 12, 12);
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
         renderSandwich(poses, bounds);
     }

@@ -44,7 +44,7 @@ public class ArrayOptionType<T> implements OptionType<Object> {
         if (value == null) {
             writer.writeNull();
         } else {
-            writer.writeArray(arrayWriter -> {
+            writer.writeArray(this.parent, ctx, arrayWriter -> {
                 Preconditions.checkArgument(value.getClass().isArray(), value + " is not an array");
                 for (int i = 0; i < Array.getLength(value); i++) {
                     this.parent.withValue((T) Array.get(value, i))
@@ -69,23 +69,13 @@ public class ArrayOptionType<T> implements OptionType<Object> {
     }
     
     @Override
-    public Object copy(Object value, OptionTypesContext ctx) {
-        int length = Array.getLength(value);
-        Object array = Array.newInstance(type, length);
-        for (int i = 0; i < length; i++) {
-            Array.set(array, i, this.parent.copy((T) Array.get(value, i), ctx));
-        }
-        return array;
-    }
-    
-    @Override
     public boolean isNullable() {
         return true;
     }
     
     @Override
     @Nullable
-    public T[] getDefaultValue() {
-        return (T[]) Array.newInstance(type, 0);
+    public Object getDefaultValue() {
+        return Array.newInstance(type, 0);
     }
 }

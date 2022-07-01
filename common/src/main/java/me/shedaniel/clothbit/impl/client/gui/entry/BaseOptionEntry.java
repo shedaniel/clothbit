@@ -63,7 +63,7 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     public ValueEntryComponent<T> valueHolder;
     private final List<EntryComponent<T>> entryComponents = new ArrayList<>();
     
-    public BaseOptionEntry(String id, Object option, OptionType<T> type, T value, OptionTypesContext ctx, Option<?>[] parents) {
+    public BaseOptionEntry(String id, Option<T> option, OptionType<T> type, T value, OptionTypesContext ctx, Option<?>[] parents) {
         this.id = id;
         this.option = MoreObjects.firstNonNull(option, type);
         this.type = type;
@@ -192,7 +192,14 @@ public class BaseOptionEntry<T> extends ListWidget.Entry<BaseOptionEntry<T>> {
     }
     
     public T getDefaultValue() {
-        if (option instanceof Option) return ((Option<T>) option).getDefaultValue();
+        if (option instanceof Option) {
+            T defaultValue = ((Option<T>) option).getDefaultValue();
+            if (defaultValue != null) {
+                return defaultValue;
+            } else {
+                return ((Option<T>) option).getType().getDefaultValue();
+            }
+        }
         return ((OptionType<T>) option).getDefaultValue();
     }
 }

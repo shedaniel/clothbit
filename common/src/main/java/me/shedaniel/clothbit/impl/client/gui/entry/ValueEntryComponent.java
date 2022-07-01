@@ -19,6 +19,7 @@
 
 package me.shedaniel.clothbit.impl.client.gui.entry;
 
+import java.lang.reflect.Array;
 import java.util.Objects;
 
 public abstract class ValueEntryComponent<T> extends EntryComponent<T> {
@@ -27,6 +28,30 @@ public abstract class ValueEntryComponent<T> extends EntryComponent<T> {
     
     public ValueEntryComponent(BaseOptionEntry<T> parent) {
         super(parent);
-        listenValue(() -> isEdited = !Objects.equals(parent.originalValue, parent.value.get()));
+        listenValue(() -> isEdited = !equals(parent.originalValue, parent.value.get()));
+    }
+    
+    private static boolean equals(Object v1, Object v2) {
+        if (Objects.equals(v1, v2)) {
+            return true;
+        }
+        if (v1 == null || v2 == null) {
+            return false;
+        }
+        if (v1.getClass().isArray() && v2.getClass().isArray()) {
+            if (Array.getLength(v1) != Array.getLength(v2)) {
+                return false;
+            }
+            
+            for (int i = 0; i < Array.getLength(v1); i++) {
+                if (!equals(Array.get(v1, i), Array.get(v2, i))) {
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        return false;
     }
 }

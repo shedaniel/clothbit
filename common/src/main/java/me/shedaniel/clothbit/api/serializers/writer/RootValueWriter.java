@@ -20,10 +20,12 @@
 package me.shedaniel.clothbit.api.serializers.writer;
 
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 
 import java.util.function.Consumer;
 
 public interface RootValueWriter extends NothingValueWriter {
     @Override
-    void writeObject(Consumer<OptionWriter<Option<?>>> consumer);
+    void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer);
 }

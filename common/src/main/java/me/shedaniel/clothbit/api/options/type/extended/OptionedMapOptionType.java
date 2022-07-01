@@ -22,29 +22,31 @@ package me.shedaniel.clothbit.api.options.type.extended;
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapOptionType implements OptionType<Map<String, ?>> {
-    private List<Option<?>> options;
-    private Map<String, Option<?>> optionsByName;
+public class OptionedMapOptionType<T> implements OptionType<Map<String, T>> {
+    private List<Option<T>> options;
+    private Map<String, Option<T>> optionsByName;
     
-    public MapOptionType(List<Option<?>> options) {
+    public OptionedMapOptionType(List<Option<T>> options) {
         this.options = options;
-        this.optionsByName = new HashMap<>();
-        for (Option<?> option : this.options) {
+        this.optionsByName = new LinkedHashMap<>();
+        for (Option<T> option : this.options) {
             this.optionsByName.put(option.getName(), option);
         }
     }
     
     @Override
-    public void write(Map<String, ?> value, ValueWriter writer, OptionTypesContext ctx) {
-        writer.writeObject(objectWriter -> {
+    public void write(Map<String, T> value, ValueWriter writer, OptionTypesContext ctx) {
+        writer.writeObject(AnyOptionType.instance(), ctx, objectWriter -> {
             for (Option<Object> child : (List<Option<Object>>) (List<? extends Option<?>>) this.options) {
                 child.withValue(((Map<String, Object>) value).getOrDefault(child.getName(), child.getDefaultValue()))
                         .write(objectWriter, ctx);
@@ -53,36 +55,22 @@ public class MapOptionType implements OptionType<Map<String, ?>> {
     }
     
     @Override
-    public Map<String, ?> read(ValueReader reader) {
-        Map<String, Object> value = new HashMap<>();
+    public Map<String, T> read(ValueReader reader) {
+        Map<String, T> value = new HashMap<>();
         reader.readObject((key, objectReader) -> {
-            Option<?> option = optionsByName.get(key);
+            Option<T> option = optionsByName.get(key);
             if (option != null) {
                 value.put(key, option.getType().read(objectReader));
                 return true;
             }
             return false;
         });
-        for (Map.Entry<String, Option<?>> entry : optionsByName.entrySet()) {
+        for (Map.Entry<String, Option<T>> entry : optionsByName.entrySet()) {
             if (!value.containsKey(entry.getKey())) {
                 value.put(entry.getKey(), entry.getValue().getDefaultValue());
             }
         }
         return value;
-    }
-    
-    @Override
-    public Map<String, ?> copy(Map<String, ?> value, OptionTypesContext ctx) {
-        Map<String, Object> newValue = new HashMap<>();
-        for (Map.Entry<String, ?> entry : value.entrySet()) {
-            Option<?> option = optionsByName.get(entry.getKey());
-            if (option != null) {
-                newValue.put(entry.getKey(), ((OptionType<Object>) option.getType()).copy(entry.getValue(), ctx));
-            } else {
-                newValue.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return newValue;
     }
     
     @Override
@@ -92,7 +80,7 @@ public class MapOptionType implements OptionType<Map<String, ?>> {
     
     @Override
     @Nullable
-    public Map<String, ?> getDefaultValue() {
+    public Map<String, T> getDefaultValue() {
         return new HashMap<>();
     }
 }

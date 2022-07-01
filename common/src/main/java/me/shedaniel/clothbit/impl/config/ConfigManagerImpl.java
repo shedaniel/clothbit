@@ -26,7 +26,7 @@ import me.shedaniel.clothbit.api.io.ConfigFormat;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
-import me.shedaniel.clothbit.impl.utils.ConfigFolderImpl;
+import me.shedaniel.clothbit.impl.utils.PlatformUtils;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screens.Screen;
@@ -68,7 +68,7 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     }
     
     public Path getPath() {
-        return ConfigFolderImpl.getConfigFolder().resolve(configAnnotation.name());
+        return PlatformUtils.get().getConfigFolder().resolve(configAnnotation.name());
     }
     
     @Override

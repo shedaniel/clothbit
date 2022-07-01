@@ -34,7 +34,7 @@ public class CollectionOptionTypeAdapter implements OptionTypeAdapter {
     public <R> Optional<OptionType<? extends R>> forType(TypeToken<R> typeToken, OptionTypesContext ctx) {
         Class<? super R> rawType = typeToken.getRawType();
         if (Collection.class.isAssignableFrom(rawType)) {
-            return Optional.of((OptionType<? extends R>) new CollectionOptionType<>(AnyOptionType.getInstance()));
+            return Optional.of(new CollectionOptionType<>(AnyOptionType.instance()).cast());
         }
         
         return Optional.empty();

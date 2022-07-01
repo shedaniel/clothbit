@@ -19,12 +19,24 @@
 
 package me.shedaniel.clothbit.api.options.type.simple.number;
 
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 public class FloatOptionType implements AbstractNumberOptionType<Float> {
+    private static final FloatOptionType PRIMITIVE_INSTANCE = new FloatOptionType(true);
+    private static final FloatOptionType BOXED_INSTANCE = new FloatOptionType(false);
+    
+    public static OptionType<Float> primitive() {
+        return PRIMITIVE_INSTANCE;
+    }
+    
+    public static OptionType<Float> boxed() {
+        return BOXED_INSTANCE;
+    }
+    
     private final boolean primitive;
     
     public FloatOptionType(boolean primitive) {

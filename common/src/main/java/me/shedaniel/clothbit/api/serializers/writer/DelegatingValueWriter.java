@@ -21,6 +21,7 @@ package me.shedaniel.clothbit.api.serializers.writer;
 
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -88,13 +89,13 @@ public abstract class DelegatingValueWriter implements ValueWriter {
     }
     
     @Override
-    public void writeObject(Consumer<OptionWriter<Option<?>>> consumer) {
-        this.parent.writeObject(consumer);
+    public void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
+        this.parent.writeObject(baseType, ctx, consumer);
     }
     
     @Override
-    public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
-        this.parent.writeArray(consumer);
+    public void writeArray(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<OptionType<?>>> consumer) {
+        this.parent.writeArray(baseType, ctx, consumer);
     }
     
     @Override

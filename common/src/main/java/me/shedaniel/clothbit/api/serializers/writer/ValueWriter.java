@@ -26,6 +26,7 @@ import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 import me.shedaniel.clothbit.api.options.type.simple.NullOptionType;
 import me.shedaniel.clothbit.api.serializers.ReadType;
+import me.shedaniel.clothbit.api.serializers.TypedValue;
 import me.shedaniel.clothbit.api.serializers.ValueBuffer;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 
@@ -67,9 +68,9 @@ public interface ValueWriter extends Closeable {
         writeNumber(value);
     }
     
-    void writeObject(Consumer<OptionWriter<Option<?>>> consumer);
+    void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer);
     
-    void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer);
+    void writeArray(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<OptionType<?>>> consumer);
     
     @Override
     void close();
@@ -99,12 +100,13 @@ public interface ValueWriter extends Closeable {
                 writeCharacter(reader.readCharacter());
                 return;
             case OBJECT:
-                writeObject(writer -> {
+                writeObject(AnyOptionType.instance(), ctx, writer -> {
                     reader.readObject((key, valueReader) -> {
                         ValueBuffer buffer = new ValueBuffer();
                         buffer.writeFrom(valueReader, ctx);
-                        Object obj = buffer.peekObj();
-                        OptionType<?> type = obj == null ? NullOptionType.getInstance() : ctx.resolveType(obj.getClass());
+                        TypedValue<?> typedObj = buffer.peekObjTyped();
+                        Object obj = typedObj == null ? null : typedObj.getValue();
+                        OptionType<?> type = obj == null ? NullOptionType.instance() : typedObj.getType();
                         Option<?> option = type.toOption(key).build();
                         ValueWriter optionWriter = writer.forOption(option);
                         buffer.writeTo(optionWriter, ctx);
@@ -113,9 +115,9 @@ public interface ValueWriter extends Closeable {
                 });
                 return;
             case ARRAY:
-                writeArray(writer -> {
+                writeArray(AnyOptionType.instance(), ctx, writer -> {
                     reader.readArray(valueReader -> {
-                        writer.forOption(AnyOptionType.getInstance()).writeFrom(valueReader, ctx);
+                        writer.forOption(AnyOptionType.instance()).writeFrom(valueReader, ctx);
                     });
                 });
                 return;

@@ -21,6 +21,7 @@ package me.shedaniel.clothbit.api.serializers.writer;
 
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 
 import java.util.function.Consumer;
 
@@ -51,12 +52,12 @@ public interface NothingValueWriter extends ValueWriter {
     }
     
     @Override
-    default void writeObject(Consumer<OptionWriter<Option<?>>> consumer) {
+    default void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
         throw new UnsupportedOperationException("Can not start writing values to nothing!");
     }
     
     @Override
-    default void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
+    default void writeArray(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<OptionType<?>>> consumer) {
         throw new UnsupportedOperationException("Can not start writing values to nothing!");
     }
     

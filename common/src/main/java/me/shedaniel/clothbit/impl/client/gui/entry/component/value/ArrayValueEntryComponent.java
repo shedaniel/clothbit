@@ -25,13 +25,17 @@ import me.shedaniel.clothbit.impl.client.gui.entry.ValueEntryComponent;
 
 import java.util.List;
 
-public class ArrayValueEntryComponent<T> extends ValueEntryComponent<T> {
-    public final List<BaseOptionEntry<T>> entries;
+public class ArrayValueEntryComponent<T, E> extends ValueEntryComponent<T> {
+    public final List<BaseOptionEntry<E>> entries;
     
-    public ArrayValueEntryComponent(BaseOptionEntry<T> parent, List<BaseOptionEntry<T>> entries) {
+    public ArrayValueEntryComponent(BaseOptionEntry<T> parent, List<BaseOptionEntry<E>> entries) {
         super(parent);
         this.entries = entries;
         this.children.addAll(this.entries);
+    }
+    
+    public static <T, E> ArrayValueEntryComponent<T, E> of(BaseOptionEntry<T> parent, List<? super BaseOptionEntry<? super E>> entries) {
+        return new ArrayValueEntryComponent<>(parent, (List<BaseOptionEntry<E>>) (List<?>) entries);
     }
     
     @Override
@@ -39,7 +43,7 @@ public class ArrayValueEntryComponent<T> extends ValueEntryComponent<T> {
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
         if (parent.selected.progress() < .01) return;
         int yy = y + 24;
-        for (BaseOptionEntry<T> entry : entries) {
+        for (BaseOptionEntry<E> entry : entries) {
             int itemHeight = entry.getItemHeight();
             entry.render(poses, index, x + BaseOptionEntry.INDENT, yy, entryWidth - BaseOptionEntry.INDENT, itemHeight, mouseX, mouseY, isHovered && entry.containsMouse(mouseX, mouseY), delta);
             yy += itemHeight;

@@ -70,7 +70,7 @@ public class GsonElementFormatEncoder implements FormatEncoder<Consumer<JsonElem
         }
         
         @Override
-        public void writeObject(Consumer<OptionWriter<Option<?>>> consumer) {
+        public void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
             JsonObject value = new JsonObject();
             consumer.accept(option -> {
                 return new ObjectGsonElementValueWriter(option.getName(), value);
@@ -79,7 +79,7 @@ public class GsonElementFormatEncoder implements FormatEncoder<Consumer<JsonElem
         }
         
         @Override
-        public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
+        public void writeArray(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<OptionType<?>>> consumer) {
             JsonArray value = new JsonArray();
             ArrayGsonElementValueWriter valueWriter = new ArrayGsonElementValueWriter(value);
             consumer.accept(type -> valueWriter);

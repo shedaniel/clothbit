@@ -57,8 +57,6 @@ public class FieldNameComponent<T> extends EntryComponent<T> {
     
     @Override
     public void render(PoseStack poses, int index, int x, int y, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean isHovered, boolean componentHovered, float delta) {
-        bounds.setBounds(x, y, entryWidth, 22);
-        
         MutableComponent text = fieldName.get().copy();
         boolean edited = parent.valueHolder.isEdited || parent.valueHolder.hasErrors;
         if (edited) {
@@ -69,7 +67,10 @@ public class FieldNameComponent<T> extends EntryComponent<T> {
         } else {
             text.withStyle(style -> style.withColor(TextColor.fromRgb(getUneditedColor())));
         }
-        font.draw(poses, text, x + 19, y + 6, TEXT_COLOR);
+        int offset = 1;
+        SandwichIconComponent<T> sandwichIcon = parent.getComponent(SandwichIconComponent.class);
+        if (sandwichIcon != null) offset += sandwichIcon.getBounds().getWidth() + 6;
+        bounds.setBounds(x + offset, y, font.draw(poses, text, x + offset, y + 6, TEXT_COLOR) - (x + offset), 22);
         
         super.render(poses, index, x, y, entryWidth, entryHeight, mouseX, mouseY, isHovered, componentHovered, delta);
     }

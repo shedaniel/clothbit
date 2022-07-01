@@ -68,7 +68,7 @@ public interface ValueReader extends Closeable {
     default void writeTo(ValueWriter writer, OptionTypesContext ctx) {
         ValueBuffer buffer = new ValueBuffer();
         buffer.writeFrom(this, ctx);
-        writer.writeAny(buffer.pop(), ctx);
+        writer.writeAny(buffer.readAny(), ctx);
     }
     
     default Object readAny() {

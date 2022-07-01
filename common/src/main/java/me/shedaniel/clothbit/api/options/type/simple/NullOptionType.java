@@ -27,9 +27,9 @@ import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 public class NullOptionType implements OptionType<Object> {
-    private static NullOptionType INSTANCE = new NullOptionType();
+    private static final NullOptionType INSTANCE = new NullOptionType();
     
-    public static NullOptionType getInstance() {
+    public static OptionType<Object> instance() {
         return INSTANCE;
     }
     
@@ -42,12 +42,6 @@ public class NullOptionType implements OptionType<Object> {
     @Override
     public Object read(ValueReader reader) {
         return reader.readNull();
-    }
-    
-    @Override
-    public Object copy(Object value, OptionTypesContext ctx) {
-        Preconditions.checkArgument(value == null, "Expected null in NullOptionType!");
-        return null;
     }
     
     @Override

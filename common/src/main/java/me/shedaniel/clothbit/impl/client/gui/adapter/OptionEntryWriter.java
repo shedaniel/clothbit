@@ -23,7 +23,6 @@ import com.mojang.datafixers.util.Pair;
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
-import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 import me.shedaniel.clothbit.api.serializers.ValueBuffer;
 import me.shedaniel.clothbit.api.serializers.writer.NothingValueWriter;
 import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
@@ -77,7 +76,7 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         }
         
         @Override
-        public void writeObject(Consumer<OptionWriter<Option<?>>> consumer) {
+        public void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
             consumer.accept(new OptionEntryWriter(this.id, this.consumer, this.ctx, new Option[0]));
         }
         
@@ -107,7 +106,7 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         }
         
         public <R> void entry(R value, Consumer<BaseOptionEntry<R>> action) {
-            BaseOptionEntry<R> entry = new BaseOptionEntry<>(id, option, (OptionType<R>) type, value, ctx, parents);
+            BaseOptionEntry<R> entry = new BaseOptionEntry<>(id, (Option<R>) option, (OptionType<R>) type, value, ctx, parents);
             action.accept(entry);
             consumer.accept((BaseOptionEntry<T>) entry);
         }
@@ -134,10 +133,30 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         
         @Override
         public void writeString(@Nullable String value) {
-            primitiveEntry(value, entry -> {
-                entry.addComponent(new TextFieldValueEntryComponent<>(entry, Objects::toString,
-                        str -> option.isNullable() && str.equals("null") ? null : str));
+            Function<String, T> fromString = fromString(option, type, ctx);
+            primitiveEntry(fromString.apply(value), entry -> {
+                entry.addComponent(new TextFieldValueEntryComponent<>(entry, toString(ctx),
+                        fromString));
             });
+        }
+        
+        private static <T> Function<T, String> toString(OptionTypesContext ctx) {
+            return value -> {
+                try (ValueBuffer buffer = new ValueBuffer()) {
+                    buffer.writeAny(value, ctx);
+                    return Objects.toString(buffer.readAny());
+                }
+            };
+        }
+        
+        private static <T> Function<String, T> fromString(@Nullable Option<T> option, OptionType<T> type, OptionTypesContext ctx) {
+            return string -> {
+                if (string == null && ((option != null && option.isNullable()) || type.isNullable())) return null;
+                try (ValueBuffer buffer = new ValueBuffer()) {
+                    buffer.writeString(string);
+                    return type.read(buffer);
+                }
+            };
         }
         
         @Override
@@ -208,38 +227,72 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
         }
         
         @Override
-        public void writeObject(Consumer<OptionWriter<Option<?>>> consumer) {
+        public void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
+            // Buffer all the values to get the value in object form
+            ValueBuffer buffer = new ValueBuffer();
+            buffer.writeObject(baseType, ctx, consumer);
+            T value = this.type.read(buffer);
+            buffer.close();
+            
             List<Option<?>> parents = new ArrayList<>();
             Collections.addAll(parents, this.parents);
-            parents.add(option);
-            // TODO change consumer to a sub category
-            consumer.accept(new OptionEntryWriter(this.id, entry -> {}, this.ctx, parents.toArray(new Option[0])));
+            if (this.option != null) parents.add(this.option);
+            
+            List<BaseOptionEntry<?>> entries = new ArrayList<>();
+            
+            this.type.write(value, new NothingValueWriter() {
+                @Override
+                public void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
+                    consumer.accept(new OptionEntryWriter(OptionValueWriter.this.id, entries::add,
+                            OptionValueWriter.this.ctx, parents.toArray(new Option[0])));
+                }
+            }, this.ctx);
+            
+            entry(value, entry -> {
+                entry.addSandwich();
+                if (this.option != null) entry.addFieldName(this.option);
+                ArrayValueEntryComponent<T, ?> component = ArrayValueEntryComponent.of(entry, entries);
+                entry.addComponent(component);
+                entry.addResetButton();
+            });
         }
         
         @Override
-        public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
+        public void writeArray(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<OptionType<?>>> consumer) {
             // Buffer all the values to get the value in object form
             ValueBuffer buffer = new ValueBuffer();
-            buffer.writeArray(consumer);
-            T values = this.type.read(buffer.copy());
+            buffer.writeArray(baseType, ctx, consumer);
+            T values = this.type.read(buffer);
+            buffer.close();
             
             // Write the values into gui entries
-            List<BaseOptionEntry<T>> entries = new ArrayList<>();
-            OptionValueWriter<T> valueWriter = new OptionValueWriter<>(this.id, entries::add, this.ctx, null,
-                    AnyOptionType.getInstance(), this.parents);
-            buffer.writeTo(new NothingValueWriter() {
+            List<BaseOptionEntry<?>> entries = new ArrayList<>();
+            Function<OptionType<?>, OptionValueWriter<?>> valueWriter = type -> new OptionValueWriter<>(this.id, entries::add, this.ctx, null,
+                    baseType, this.parents);
+            this.type.write(values, new NothingValueWriter() {
                 @Override
-                public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
-                    consumer.accept(elementType -> valueWriter);
+                public void writeArray(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<OptionType<?>>> consumer) {
+                    consumer.accept(valueWriter::apply);
                 }
-            }, ctx);
+            }, this.ctx);
             
-            Consumer<BaseOptionEntry<T>>[] delete = new Consumer[1];
-            Function<BaseOptionEntry<T>, Integer>[] indexGetter = new Function[1];
+            BaseOptionEntry<T>[] baseEntry = new BaseOptionEntry[1];
+            List<BaseOptionEntry<Object>>[] allEntries = new List[1];
+            Consumer<BaseOptionEntry<?>>[] delete = new Consumer[1];
             
-            // Apply field names
-            for (BaseOptionEntry<T> entry : entries) {
-                entry.addComponent(new DeleteIconComponent<T>(entry) {
+            Consumer<BaseOptionEntry<?>> entryDecorator = entry -> {
+                entry.value.addListener(() -> {
+                    if (allEntries[0] == null) return;
+                    ValueBuffer arrayBuf = new ValueBuffer();
+                    arrayBuf.writeArray(baseType, ctx, writer -> {
+                        for (BaseOptionEntry<Object> optionEntry : allEntries[0]) {
+                            optionEntry.type.withValue(optionEntry.value.get())
+                                    .writeWithType(writer, this.ctx);
+                        }
+                    });
+                    baseEntry[0].value.set(this.type.read(arrayBuf));
+                });
+                entry.addComponent(new DeleteIconComponent(entry) {
                     @Override
                     protected void onClicked() {
                         delete[0].accept(entry);
@@ -247,34 +300,44 @@ public class OptionEntryWriter implements OptionWriter<Option<?>> {
                 });
                 Pair<Integer, Component>[] last = new Pair[]{new Pair<Integer, Component>(-1, null)};
                 entry.addFieldName(() -> {
-                    int index = indexGetter[0].apply(entry);
+                    int index = allEntries[0].indexOf(entry);
                     if (last[0].getFirst().equals(index)) {
                         return last[0].getSecond();
                     }
                     last[0] = new Pair<>(index, new TranslatableComponent("text.clothbit.array.index", String.valueOf(index + 1)));
                     return last[0].getSecond();
                 });
-            }
+            };
+            
+            // Apply field names
+            entries.forEach(entryDecorator);
             
             // Add array entry
-            primitiveEntry(values, entry -> {
-                ArrayValueEntryComponent<T> component = new ArrayValueEntryComponent<>(entry, entries);
+            entry(values, entry -> {
+                entry.addSandwich();
+                if (this.option != null) entry.addFieldName(this.option);
+                ArrayValueEntryComponent<T, ?> component = ArrayValueEntryComponent.of(entry, entries);
                 entry.addComponent(component);
                 entry.addComponent(new AddIconComponent<T>(entry) {
                     @Override
                     protected void onClicked() {
-//                        BaseOptionEntry<T>[] newEntry = new BaseOptionEntry[]{null};
-//                        OptionValueWriter<T> valueWriter = new OptionValueWriter<>(id, e -> newEntry[0] = e, ctx, null,
-//                                AnyOptionType.getInstance(), parents);
-//                        type.write(type.getDefaultValue(), valueWriter);
+                        BaseOptionEntry<Object>[] newEntry = new BaseOptionEntry[]{null};
+                        OptionValueWriter<?> valueWriter = new OptionValueWriter<>(id, e -> newEntry[0] = e, OptionValueWriter.this.ctx, null,
+                                (OptionType<Object>) baseType, parents);
+                        ((OptionType<Object>) baseType).write(baseType.getDefaultValue(), valueWriter, OptionValueWriter.this.ctx);
+                        ((List<BaseOptionEntry<Object>>) (List<?>) component.entries).add(newEntry[0]);
+                        component.children.add(newEntry[0]);
+                        entryDecorator.accept(newEntry[0]);
                     }
                 });
+                entry.addResetButton();
                 delete[0] = valueEntry -> {
                     component.children.remove(valueEntry);
                     component.drawables.remove(valueEntry);
                     component.entries.remove(valueEntry);
                 };
-                indexGetter[0] = component.entries::indexOf;
+                baseEntry[0] = entry;
+                allEntries[0] = (List<BaseOptionEntry<Object>>) (List<?>) component.entries;
             });
         }
         

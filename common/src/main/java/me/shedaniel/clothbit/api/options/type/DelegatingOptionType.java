@@ -43,11 +43,6 @@ public abstract class DelegatingOptionType<T> implements OptionType<T> {
     }
     
     @Override
-    public T copy(T value, OptionTypesContext ctx) {
-        return this.parent.copy(value, ctx);
-    }
-    
-    @Override
     public boolean isNullable() {
         return this.parent.isNullable();
     }

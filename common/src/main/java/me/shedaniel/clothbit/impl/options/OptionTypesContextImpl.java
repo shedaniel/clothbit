@@ -71,7 +71,7 @@ public class OptionTypesContextImpl implements OptionTypesContext {
         this.adapters.add(new NullSafetyAdapter(new ArrayOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new CollectionOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new MapOptionTypeAdapter()));
-        this.adapters.add(new NullSafetyAdapter(new AnyOptionTypeAdapter()));
+        this.adapters.add(new AnyOptionTypeAdapter());
         this.adapters.add(new NullSafetyAdapter(new ReflectOptionTypeAdapter()));
     }
     

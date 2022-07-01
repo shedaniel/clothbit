@@ -89,7 +89,7 @@ public class GsonFormatEncoder implements FormatEncoder<Writer> {
         }
         
         @Override
-        public void writeObject(Consumer<OptionWriter<Option<?>>> consumer) {
+        public void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
             call(() -> {
                 this.writer.beginObject();
                 consumer.accept(option -> {
@@ -101,7 +101,7 @@ public class GsonFormatEncoder implements FormatEncoder<Writer> {
         }
         
         @Override
-        public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
+        public void writeArray(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<OptionType<?>>> consumer) {
             call(() -> {
                 this.writer.beginArray();
                 Task tmp = this.onClose;

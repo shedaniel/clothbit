@@ -32,9 +32,4 @@ public interface AbstractNumberOptionType<T extends Number> extends OptionType<T
             writer.writeNumber(value);
         }
     }
-    
-    @Override
-    default T copy(T value, OptionTypesContext ctx) {
-        return value;
-    }
 }

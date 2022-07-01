@@ -31,4 +31,16 @@ public class ExampleConfigObject {
     public boolean[] bool = new boolean[]{false, true};
     public Object[] yes = new Object[]{false, true};
     public ResourceLocation id = new ResourceLocation("ues");
+    public Nested nested = new Nested();
+    public Nested[] nesteds = new Nested[]{new Nested(), new Nested()};
+    
+    public static class Nested {
+        public boolean apkjdwa = false;
+        public int age = 10;
+        public String thing;
+        public boolean[] bool = new boolean[]{false, true};
+        public boolean[][] boolMatrix = new boolean[][]{new boolean[]{false, true}, new boolean[]{false, true}};
+        public Object[] yes = new Object[]{false, true};
+        public ResourceLocation id = new ResourceLocation("ues");
+    }
 }

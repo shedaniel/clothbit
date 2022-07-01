@@ -17,55 +17,53 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-package me.shedaniel.clothbit.api.options.type.simple.number;
+package me.shedaniel.clothbit.api.options.type.extended;
 
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
-import me.shedaniel.clothbit.api.options.type.simple.CharacterOptionType;
+import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
-public class ByteOptionType implements AbstractNumberOptionType<Byte> {
-    private static final ByteOptionType PRIMITIVE_INSTANCE = new ByteOptionType(true);
-    private static final ByteOptionType BOXED_INSTANCE = new ByteOptionType(false);
+import java.util.HashMap;
+import java.util.Map;
+
+public class AnyMapOptionType<T> implements OptionType<Map<String, T>> {
+    private OptionType<T> valueType;
     
-    public static OptionType<Byte> primitive() {
-        return PRIMITIVE_INSTANCE;
-    }
-    
-    public static OptionType<Byte> boxed() {
-        return BOXED_INSTANCE;
-    }
-    
-    private final boolean primitive;
-    
-    public ByteOptionType(boolean primitive) {
-        this.primitive = primitive;
+    public AnyMapOptionType(OptionType<T> valueType) {
+        this.valueType = valueType;
     }
     
     @Override
-    public void write(Byte value, ValueWriter writer, OptionTypesContext ctx) {
-        if (value == null) {
-            writer.writeNull();
-        } else {
-            writer.writeByte(value);
-        }
+    public void write(Map<String, T> value, ValueWriter writer, OptionTypesContext ctx) {
+        writer.writeObject(this.valueType, ctx, objectWriter -> {
+            for (Map.Entry<String, T> entry : value.entrySet()) {
+                this.valueType.toOption(entry.getKey()).build().withValue(entry.getValue())
+                        .write(objectWriter, ctx);
+            }
+        });
     }
     
     @Override
-    public Byte read(ValueReader reader) {
-        return reader.peek().isNull() ? reader.readNull() : reader.readByte();
+    public Map<String, T> read(ValueReader reader) {
+        Map<String, T> value = new HashMap<>();
+        reader.readObject((key, objectReader) -> {
+            value.put(key, this.valueType.read(objectReader));
+            return true;
+        });
+        return value;
     }
     
     @Override
     public boolean isNullable() {
-        return !primitive;
+        return true;
     }
     
     @Override
     @Nullable
-    public Byte getDefaultValue() {
-        return primitive ? (byte) 0 : null;
+    public Map<String, T> getDefaultValue() {
+        return new HashMap<>();
     }
 }

@@ -33,7 +33,7 @@ public class AnyOptionTypeAdapter implements OptionTypeAdapter {
     public <R> Optional<OptionType<? extends R>> forType(TypeToken<R> typeToken, OptionTypesContext ctx) {
         Class<? super R> rawType = typeToken.getRawType();
         if (Objects.equals(rawType, Object.class)) {
-            return Optional.of((OptionType<? extends R>) AnyOptionType.getInstance());
+            return Optional.of(AnyOptionType.instance());
         }
         return Optional.empty();
     }

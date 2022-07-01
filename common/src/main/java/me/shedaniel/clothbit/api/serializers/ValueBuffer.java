@@ -19,21 +19,29 @@
 
 package me.shedaniel.clothbit.api.serializers;
 
+import com.google.common.base.MoreObjects;
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.options.type.extended.ArrayOptionType;
+import me.shedaniel.clothbit.api.options.type.extended.OptionedMapOptionType;
+import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
+import me.shedaniel.clothbit.api.options.type.simple.BooleanOptionType;
+import me.shedaniel.clothbit.api.options.type.simple.CharacterOptionType;
+import me.shedaniel.clothbit.api.options.type.simple.StringOptionType;
+import me.shedaniel.clothbit.api.options.type.simple.number.*;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
-import me.shedaniel.clothbit.api.serializers.writer.NonClosingValueWriter;
 import me.shedaniel.clothbit.api.serializers.writer.OptionWriter;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
 public class ValueBuffer implements ValueReader, ValueWriter {
-    private Stack<Object> stack = new Stack<>();
+    protected Stack<TypedValue<?>> stack = new Stack<>();
     
     public ValueBuffer() {
     }
@@ -44,102 +52,107 @@ public class ValueBuffer implements ValueReader, ValueWriter {
     
     @Override
     public void writeTo(ValueWriter writer, OptionTypesContext ctx) {
-        writer.writeAny(pop(), ctx);
-    }
-    
-    public Object pop() {
-        return stack.pop();
+        writer.writeAny(readAny(), ctx);
     }
     
     public Object peekObj() {
+        TypedValue<?> peek = peekObjTyped();
+        return peek == null ? null : peek.getValue();
+    }
+    
+    @Nullable
+    public TypedValue<?> peekObjTyped() {
         return stack.peek();
     }
     
     @Override
     @Nullable
     public <T> T readNull() {
-        Object pop = pop();
+        Object pop = readAny();
         if (pop != null) throw new IllegalStateException("Could not read null when the next object is " + pop);
         return null;
     }
     
     @Override
     public String readString() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof String)) throw new IllegalStateException("Could not read string when the next object is " + pop);
         return (String) pop;
     }
     
     @Override
     public boolean readBoolean() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Boolean)) throw new IllegalStateException("Could not read boolean when the next object is " + pop);
         return (Boolean) pop;
     }
     
     @Override
     public char readCharacter() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Character)) throw new IllegalStateException("Could not read character when the next object is " + pop);
         return (Character) pop;
     }
     
     @Override
     public byte readByte() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Byte)) throw new IllegalStateException("Could not read byte when the next object is " + pop);
         return (Byte) pop;
     }
     
     @Override
     public short readShort() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Short)) throw new IllegalStateException("Could not read short when the next object is " + pop);
         return (Short) pop;
     }
     
     @Override
     public int readInt() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Integer)) throw new IllegalStateException("Could not read int when the next object is " + pop);
         return (Integer) pop;
     }
     
     @Override
     public long readLong() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Long)) throw new IllegalStateException("Could not read long when the next object is " + pop);
         return (Long) pop;
     }
     
     @Override
     public float readFloat() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Float)) throw new IllegalStateException("Could not read float when the next object is " + pop);
         return (Float) pop;
     }
     
     @Override
     public double readDouble() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Double)) throw new IllegalStateException("Could not read double when the next object is " + pop);
         return (Double) pop;
     }
     
     @Override
     public Number readNumber() {
-        Object pop = pop();
+        Object pop = readAny();
         if (!(pop instanceof Number)) throw new IllegalStateException("Could not read number when the next object is " + pop);
         return (Number) pop;
     }
     
     @Override
     public void readObject(BiPredicate<String, ValueReader> consumer) {
-        Object pop = pop();
-        if (!(pop instanceof Map)) throw new IllegalStateException("Could not read object when the next object is " + pop);
+        TypedValue<?> pop = readAnyTyped();
+        if (!(pop instanceof TypedMap)) {
+            Object popValue = pop == null ? null : pop.getValue();
+            throw new IllegalStateException("Could not read object when the next object is " + popValue);
+        }
         ValueBuffer buffer = new ValueBuffer();
-        Map<String, Object> data = (Map<String, Object>) pop;
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
+        TypedMap<Object> data = (TypedMap<Object>) pop;
+        for (Map.Entry<String, TypedValue<Object>> entry : data.getValues().entrySet()) {
             buffer.stack.push(entry.getValue());
             consumer.test(entry.getKey(), buffer);
             buffer.clear();
@@ -148,20 +161,38 @@ public class ValueBuffer implements ValueReader, ValueWriter {
     
     @Override
     public void readArray(Consumer<ValueReader> consumer) {
-        Object pop = pop();
-        if (!(pop instanceof List)) throw new IllegalStateException("Could not read array when the next object is " + pop);
-        ValueBuffer buffer = new ValueBuffer();
-        List<Object> data = (List<Object>) pop;
-        for (Object entry : data) {
-            buffer.stack.push(entry);
-            consumer.accept(buffer);
-            buffer.clear();
+        TypedValue<?> pop = readAnyTyped();
+        if (pop instanceof TypedList) {
+            ValueBuffer buffer = new ValueBuffer();
+            TypedList<Object> data = (TypedList<Object>) pop;
+            for (TypedValue<Object> entry : data.getValues()) {
+                buffer.stack.push(entry);
+                consumer.accept(buffer);
+                buffer.clear();
+            }
+        } else if (pop instanceof TypedArray) {
+            ValueBuffer buffer = new ValueBuffer();
+            TypedArray<Object> data = (TypedArray<Object>) pop;
+            for (TypedValue<Object> entry : data.getValues()) {
+                buffer.stack.push(entry);
+                consumer.accept(buffer);
+                buffer.clear();
+            }
+        } else {
+            Object popValue = pop == null ? null : pop.getValue();
+            throw new IllegalStateException("Could not read array when the next object is " + popValue);
         }
     }
     
     @Override
     public Object readAny() {
-        return pop();
+        TypedValue<?> pop = readAnyTyped();
+        return pop == null ? null : pop.getValue();
+    }
+    
+    @Nullable
+    public TypedValue<?> readAnyTyped() {
+        return stack.pop();
     }
     
     @Override
@@ -191,53 +222,109 @@ public class ValueBuffer implements ValueReader, ValueWriter {
     
     @Override
     public void writeString(String value) {
-        stack.push(value);
+        stack.push(new SingleTypedValue<>(StringOptionType.instance(), value));
     }
     
     @Override
     public void writeBoolean(boolean value) {
-        stack.push(value);
+        stack.push(new SingleTypedValue<>(BooleanOptionType.primitive(), value));
     }
     
     @Override
     public void writeCharacter(char value) {
-        stack.push(value);
+        stack.push(new SingleTypedValue<>(CharacterOptionType.primitive(), value));
     }
     
     @Override
     public void writeNumber(Number value) {
-        stack.push(value);
+        if (value instanceof Byte) {
+            stack.push(new SingleTypedValue<>(ByteOptionType.boxed(), (Byte) value));
+        } else if (value instanceof Short) {
+            stack.push(new SingleTypedValue<>(ShortOptionType.boxed(), (Short) value));
+        } else if (value instanceof Integer) {
+            stack.push(new SingleTypedValue<>(IntOptionType.boxed(), (Integer) value));
+        } else if (value instanceof Long) {
+            stack.push(new SingleTypedValue<>(LongOptionType.boxed(), (Long) value));
+        } else if (value instanceof Float) {
+            stack.push(new SingleTypedValue<>(FloatOptionType.boxed(), (Float) value));
+        } else if (value instanceof Double) {
+            stack.push(new SingleTypedValue<>(DoubleOptionType.boxed(), (Double) value));
+        } else {
+            stack.push(new SingleTypedValue<>(AnyOptionType.instance(), value));
+        }
     }
     
     @Override
-    public void writeObject(Consumer<OptionWriter<Option<?>>> consumer) {
-        Map<String, Object> data = new HashMap<>();
-        List<String> keys = new ArrayList<>();
+    public void writeByte(byte value) {
+        stack.push(new SingleTypedValue<>(ByteOptionType.primitive(), value));
+    }
+    
+    @Override
+    public void writeShort(short value) {
+        stack.push(new SingleTypedValue<>(ShortOptionType.primitive(), value));
+    }
+    
+    @Override
+    public void writeInt(int value) {
+        stack.push(new SingleTypedValue<>(IntOptionType.primitive(), value));
+    }
+    
+    @Override
+    public void writeLong(long value) {
+        stack.push(new SingleTypedValue<>(LongOptionType.primitive(), value));
+    }
+    
+    @Override
+    public void writeFloat(float value) {
+        stack.push(new SingleTypedValue<>(FloatOptionType.primitive(), value));
+    }
+    
+    @Override
+    public void writeDouble(double value) {
+        stack.push(new SingleTypedValue<>(DoubleOptionType.primitive(), value));
+    }
+    
+    @Override
+    public void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
+        Map<String, TypedValue<Object>> data = new LinkedHashMap<>();
+        List<Option<Object>> options = new ArrayList<>();
         ValueBuffer buffer = new ValueBuffer();
         consumer.accept(option -> {
-            keys.add(option.getName());
-            return buffer;
+            options.add((Option<Object>) option);
+            return new ValueBuffer() {
+                @Override
+                public void close() {
+                    buffer.stack.addAll(0, this.stack);
+                    super.close();
+                }
+            };
         });
-        for (String key : keys) {
-            data.put(key, buffer.pop());
+        // reverse buffer.stack
+        for (Option<Object> option : options) {
+            data.put(option.getName(), (TypedValue<Object>) copy(option.getType(), buffer.readAny(), ctx));
         }
         buffer.close();
-        stack.push(data);
+        stack.push(new TypedMap<>(new OptionedMapOptionType<>(options), data));
     }
     
     @Override
-    public void writeArray(Consumer<OptionWriter<OptionType<?>>> consumer) {
-        ValueBuffer buffer = new ValueBuffer();
-        NonClosingValueWriter valueWriter = new NonClosingValueWriter(buffer);
-        consumer.accept(type -> valueWriter);
-        List<Object> data = new ArrayList<>(buffer.stack);
-        buffer.close();
-        stack.push(data);
+    public void writeArray(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<OptionType<?>>> consumer) {
+        List<TypedValue<Object>> data = new ArrayList<>();
+        consumer.accept(type -> {
+            return new ValueBuffer() {
+                @Override
+                public void close() {
+                    data.add((TypedValue<Object>) this.readAnyTyped());
+                    super.close();
+                }
+            };
+        });
+        stack.push(new TypedList<>(AnyOptionType.instance(), data));
     }
     
     @Override
     public void writeAny(Object value, OptionTypesContext ctx) {
-        stack.push(copy(value));
+        stack.push(copy(value, ctx));
     }
     
     @Override
@@ -249,29 +336,68 @@ public class ValueBuffer implements ValueReader, ValueWriter {
         this.stack.clear();
     }
     
-    public ValueBuffer copy() {
+    public ValueBuffer copy(OptionTypesContext ctx) {
         ValueBuffer copy = new ValueBuffer();
-        for (Object o : this.stack) {
-            copy.stack.add(copy(o));
+        for (TypedValue<?> o : this.stack) {
+            copy.stack.add(copy(o, ctx));
         }
         return copy;
     }
     
-    private Object copy(Object o) {
+    private TypedValue<?> copy(Object o, OptionTypesContext ctx) {
+        return copy(null, o, ctx);
+    }
+    
+    private TypedValue<?> copy(@Nullable OptionType<?> type, Object o, OptionTypesContext ctx) {
+        if (o == null) return null;
         if (o instanceof Map) {
-            Map<String, Object> newMap = new HashMap<>();
+            Map<String, TypedValue<Object>> newMap = new LinkedHashMap<>();
             for (Map.Entry<String, Object> entry : ((Map<String, Object>) o).entrySet()) {
-                newMap.put(entry.getKey(), copy(entry.getValue()));
+                newMap.put(entry.getKey(), (TypedValue<Object>) copy(entry.getValue(), ctx));
             }
-            return newMap;
+            return new TypedMap<>(MoreObjects.firstNonNull(type, AnyOptionType.instance()).cast(), newMap);
+        }
+        if (o instanceof TypedMap) {
+            Map<String, TypedValue<Object>> newMap = new LinkedHashMap<>();
+            for (Map.Entry<String, TypedValue<Object>> entry : ((TypedMap<Object>) o).getValues().entrySet()) {
+                newMap.put(entry.getKey(), (TypedValue<Object>) copy(entry.getValue(), ctx));
+            }
+            return new TypedMap<>(MoreObjects.firstNonNull(type, ((TypedMap<Object>) o).getType()).cast(), newMap);
         }
         if (o instanceof Iterable) {
-            List<Object> newList = new ArrayList<>();
+            List<TypedValue<Object>> newList = new ArrayList<>();
             for (Object entry : ((Iterable<?>) o)) {
-                newList.add(copy(entry));
+                newList.add((TypedValue<Object>) copy(entry, ctx));
             }
-            return newList;
+            return new TypedList<>(MoreObjects.firstNonNull(type, AnyOptionType.instance()).cast(), newList);
         }
-        return o;
+        if (o instanceof TypedList) {
+            List<TypedValue<Object>> newList = new ArrayList<>();
+            for (TypedValue<Object> entry : ((TypedList<Object>) o).getValues()) {
+                newList.add((TypedValue<Object>) copy(entry, ctx));
+            }
+            return new TypedList<>(MoreObjects.firstNonNull(type, ((TypedList<Object>) o).getType()).cast(), newList);
+        }
+        if (o instanceof TypedArray) {
+            List<TypedValue<Object>> newList = new ArrayList<>();
+            for (TypedValue<Object> entry : ((TypedArray<Object>) o).getValues()) {
+                newList.add((TypedValue<Object>) copy(entry, ctx));
+            }
+            return new TypedArray<>(MoreObjects.firstNonNull(type, ((TypedArray<Object>) o).getType()).cast(), newList);
+        }
+        if (o.getClass().isArray()) {
+            List<TypedValue<Object>> newList = new ArrayList<>();
+            for (int i = 0; i < Array.getLength(o); i++) {
+                newList.add((TypedValue<Object>) copy(Array.get(o, i), ctx));
+            }
+            Class<Object> componentType = (Class<Object>) o.getClass().getComponentType();
+            OptionType<Object> newType = MoreObjects.firstNonNull(type, ctx.resolveType(componentType)).cast();
+            return new TypedArray<>(new ArrayOptionType<>(newType, componentType), newList);
+        }
+        if (o instanceof TypedValue) {
+            return new SingleTypedValue<>(((TypedValue<Object>) o).getType(), copy(((TypedValue<Object>) o).getValue(), ctx).getValue());
+        }
+        OptionType<Object> newType = MoreObjects.firstNonNull(type, ctx.resolveType((Class<Object>) o.getClass())).cast();
+        return new SingleTypedValue<>(newType, o);
     }
 }

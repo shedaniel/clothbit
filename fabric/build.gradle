@@ -20,11 +20,10 @@ dependencies {
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     modApi("com.terraformersmc:modmenu:1.16.9") { transitive false }
     modCompileOnly "me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}"
-    modRuntime "me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}"
+    modRuntimeOnly "me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}"
     shadowCommon "me.shedaniel.cloth:basic-math:${rootProject.basic_math_version}"
 
-    implementation(project(path: ":common")) { transitive false }
-    developmentFabric(project(path: ":common")) { transitive false }
+    implementation(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
 }
 

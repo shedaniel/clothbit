@@ -1,7 +1,7 @@
 plugins {
-    id "architectury-plugin" version "3.2-SNAPSHOT"
-    id "org.cadixdev.licenser" version "0.5.0"
-    id "dev.architectury.loom" version "0.7.2-SNAPSHOT" apply false
+    id "architectury-plugin" version "3.4-SNAPSHOT"
+    id "org.cadixdev.licenser" version "0.6.1"
+    id "dev.architectury.loom" version "0.12.0-SNAPSHOT" apply false
 }
 
 architectury {
@@ -13,6 +13,17 @@ subprojects {
 
     loom {
         silentMojangMappingsLicense()
+    }
+
+    if (project.path != ':common') {
+        loom {
+            mods {
+                main {
+                    sourceSet project.sourceSets.main
+                    sourceSet project(':common').sourceSets.main
+                }
+            }
+        }
     }
 
     dependencies {
@@ -33,6 +44,10 @@ allprojects {
     archivesBaseName = rootProject.archives_base_name
     version = rootProject.mod_version
     group = rootProject.maven_group
+
+    architectury {
+        compileOnly()
+    }
 
     repositories {
         // Add repositories to retrieve artifacts from in here.
@@ -59,7 +74,7 @@ allprojects {
 
         ext {
             name = "shedaniel"
-            year = "2021"
+            year = "2021, 2022"
         }
 
         include "**/*.java"

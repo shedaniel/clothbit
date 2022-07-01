@@ -19,6 +19,7 @@
 
 package me.shedaniel.clothbit.api.options;
 
+import me.shedaniel.clothbit.api.serializers.ValueBuffer;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +36,11 @@ public interface OptionType<T> {
     
     T read(ValueReader reader);
     
-    T copy(T value, OptionTypesContext ctx);
+    default T copy(T value, OptionTypesContext ctx) {
+        ValueBuffer buffer = new ValueBuffer();
+        write(value, buffer, ctx);
+        return read(buffer);
+    }
     
     boolean isNullable();
     
@@ -65,13 +70,6 @@ public interface OptionType<T> {
             }
             
             @Override
-            public R copy(R value, OptionTypesContext ctx) {
-                if (value == null) return null;
-                T read = self.copy(backwards.apply(value), ctx);
-                return read == null ? null : forwards.apply(read);
-            }
-            
-            @Override
             @Nullable
             public R getDefaultValue() {
                 T defaultValue = self.getDefaultValue();
@@ -83,5 +81,9 @@ public interface OptionType<T> {
                 return self.isNullable();
             }
         };
+    }
+    
+    default <B> OptionType<B> cast() {
+        return (OptionType<B>) this;
     }
 }

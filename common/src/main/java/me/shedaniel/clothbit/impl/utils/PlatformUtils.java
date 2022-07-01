@@ -19,13 +19,15 @@
 
 package me.shedaniel.clothbit.impl.utils;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
-
 import java.nio.file.Path;
+import java.util.ServiceLoader;
 
-public class ConfigFolderImpl {
-    @ExpectPlatform
-    public static Path getConfigFolder() {
-        throw new AssertionError();
+public interface PlatformUtils {
+    ServiceLoader<PlatformUtils> LOADER = ServiceLoader.load(PlatformUtils.class);
+    
+    static PlatformUtils get() {
+        return LOADER.iterator().next();
     }
+    
+    Path getConfigFolder();
 }

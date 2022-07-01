@@ -41,7 +41,7 @@ public class CollectionOptionType<T> implements OptionType<Collection<T>> {
         if (value == null) {
             writer.writeNull();
         } else {
-            writer.writeArray(arrayWriter -> {
+            writer.writeArray(this.parent, ctx, arrayWriter -> {
                 for (T child : value) {
                     this.parent.withValue(child).writeWithType(arrayWriter, ctx);
                 }
@@ -56,15 +56,6 @@ public class CollectionOptionType<T> implements OptionType<Collection<T>> {
             values.add(this.parent.read(arrayReader));
         });
         return values;
-    }
-    
-    @Override
-    public Collection<T> copy(Collection<T> values, OptionTypesContext ctx) {
-        List<T> newValues = new ArrayList<>();
-        for (T value : values) {
-            newValues.add(this.parent.copy(value, ctx));
-        }
-        return newValues;
     }
     
     @Override

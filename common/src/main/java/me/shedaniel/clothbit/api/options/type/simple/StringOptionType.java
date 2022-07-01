@@ -19,13 +19,19 @@
 
 package me.shedaniel.clothbit.api.options.type.simple;
 
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 public class StringOptionType implements OptionType<String> {
+    private static final StringOptionType INSTANCE = new StringOptionType();
+    
+    public static OptionType<String> instance() {
+        return INSTANCE;
+    }
+    
     @Override
     public void write(String value, ValueWriter writer, OptionTypesContext ctx) {
         if (value == null) {
@@ -38,11 +44,6 @@ public class StringOptionType implements OptionType<String> {
     @Override
     public String read(ValueReader reader) {
         return reader.peek().isNull() ? reader.readNull() : reader.readString();
-    }
-    
-    @Override
-    public String copy(String value, OptionTypesContext ctx) {
-        return value;
     }
     
     @Override

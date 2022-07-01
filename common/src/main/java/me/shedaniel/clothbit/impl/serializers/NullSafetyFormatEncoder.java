@@ -20,6 +20,7 @@
 package me.shedaniel.clothbit.impl.serializers;
 
 import me.shedaniel.clothbit.api.options.Option;
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.property.NullableOptionProperty;
 import me.shedaniel.clothbit.api.serializers.format.FormatEncoder;
@@ -42,8 +43,8 @@ public class NullSafetyFormatEncoder<W> implements FormatEncoder<W> {
     public <T> ValueWriter writer(W writer, OptionTypesContext ctx, FormatFlag... flags) {
         return new DelegatingValueWriter(this.parent.writer(writer, ctx, flags)) {
             @Override
-            public void writeObject(Consumer<OptionWriter<Option<?>>> consumer) {
-                super.writeObject(writer -> {
+            public void writeObject(OptionType<?> baseType, OptionTypesContext ctx, Consumer<OptionWriter<Option<?>>> consumer) {
+                super.writeObject(baseType, ctx, writer -> {
                     consumer.accept(option -> {
                         ValueWriter valueWriter = writer.forOption(option);
                         NullableOptionProperty.HandleMode nullable = option.getNullable();

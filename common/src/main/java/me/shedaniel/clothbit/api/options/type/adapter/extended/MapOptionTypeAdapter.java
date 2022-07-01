@@ -20,9 +20,11 @@
 package me.shedaniel.clothbit.api.options.type.adapter.extended;
 
 import com.google.gson.reflect.TypeToken;
-import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
+import me.shedaniel.clothbit.api.options.OptionTypesContext;
+import me.shedaniel.clothbit.api.options.type.extended.AnyMapOptionType;
+import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 
 import java.util.Map;
 import java.util.Optional;
@@ -32,7 +34,7 @@ public class MapOptionTypeAdapter implements OptionTypeAdapter {
     public <R> Optional<OptionType<? extends R>> forType(TypeToken<R> typeToken, OptionTypesContext ctx) {
         Class<? super R> rawType = typeToken.getRawType();
         if (Map.class.isAssignableFrom(rawType)) {
-            // TODO
+            return Optional.of(new AnyMapOptionType<>(AnyOptionType.instance()).cast());
         }
         
         return Optional.empty();

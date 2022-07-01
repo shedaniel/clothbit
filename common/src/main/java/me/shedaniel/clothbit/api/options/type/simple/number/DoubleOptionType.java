@@ -19,12 +19,24 @@
 
 package me.shedaniel.clothbit.api.options.type.simple.number;
 
+import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 public class DoubleOptionType implements AbstractNumberOptionType<Double> {
+    private static final DoubleOptionType PRIMITIVE_INSTANCE = new DoubleOptionType(true);
+    private static final DoubleOptionType BOXED_INSTANCE = new DoubleOptionType(false);
+    
+    public static OptionType<Double> primitive() {
+        return PRIMITIVE_INSTANCE;
+    }
+    
+    public static OptionType<Double> boxed() {
+        return BOXED_INSTANCE;
+    }
+    
     private final boolean primitive;
     
     public DoubleOptionType(boolean primitive) {

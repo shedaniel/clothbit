@@ -26,6 +26,17 @@ import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 public class BooleanOptionType implements OptionType<Boolean> {
+    private static final BooleanOptionType PRIMITIVE_INSTANCE = new BooleanOptionType(true);
+    private static final BooleanOptionType BOXED_INSTANCE = new BooleanOptionType(false);
+    
+    public static OptionType<Boolean> primitive() {
+        return PRIMITIVE_INSTANCE;
+    }
+    
+    public static OptionType<Boolean> boxed() {
+        return BOXED_INSTANCE;
+    }
+    
     private final boolean primitive;
     
     public BooleanOptionType(boolean primitive) {
@@ -44,11 +55,6 @@ public class BooleanOptionType implements OptionType<Boolean> {
     @Override
     public Boolean read(ValueReader reader) {
         return reader.peek().isNull() ? reader.readNull() : reader.readBoolean();
-    }
-    
-    @Override
-    public Boolean copy(Boolean value, OptionTypesContext ctx) {
-        return value;
     }
     
     @Override

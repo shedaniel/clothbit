@@ -26,9 +26,9 @@ import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
 public class AnyOptionType<T> implements OptionType<T> {
-    private static AnyOptionType<Object> INSTANCE = new AnyOptionType<>();
+    private static final AnyOptionType<Object> INSTANCE = new AnyOptionType<>();
     
-    public static <T> AnyOptionType<T> getInstance() {
+    public static <T> OptionType<T> instance() {
         return (AnyOptionType<T>) INSTANCE;
     }
     
@@ -40,16 +40,6 @@ public class AnyOptionType<T> implements OptionType<T> {
     @Override
     public T read(ValueReader reader) {
         return (T) reader.readAny();
-    }
-    
-    @Override
-    public T copy(T value, OptionTypesContext ctx) {
-        OptionType<T> type = ctx.resolveType((Class<T>) value.getClass());
-        if (type instanceof AnyOptionType) {
-            throw new IllegalStateException("Can not resolve option type for " + value);
-        } else {
-            return type.copy(value, ctx);
-        }
     }
     
     @Override

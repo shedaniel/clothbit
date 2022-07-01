@@ -27,7 +27,7 @@ import me.shedaniel.clothbit.api.annotations.FieldName;
 import me.shedaniel.clothbit.api.annotations.IgnoreField;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
-import me.shedaniel.clothbit.api.options.type.extended.MapOptionType;
+import me.shedaniel.clothbit.api.options.type.extended.OptionedMapOptionType;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.api.serializers.format.Serializer;
 
@@ -41,7 +41,7 @@ public class TestOptions {
         {
             Serializer<Writer, Reader> serializer = Serializer.gson()
                     .flag(FormatFlag.indent("    "));
-            MapOptionType root = new MapOptionType(ImmutableList.of(
+            OptionedMapOptionType root = new OptionedMapOptionType(ImmutableList.of(
                     optionTypesContext.resolveType(Integer.TYPE).toOption("epic")
                             .defaultValue(10)
                             .build(),
@@ -51,7 +51,7 @@ public class TestOptions {
                     optionTypesContext.resolveType(String.class).toOption("idk")
                             .defaultValue("default")
                             .build(),
-                    new MapOptionType(ImmutableList.of(
+                    new OptionedMapOptionType(ImmutableList.of(
                             optionTypesContext.resolveType(Boolean.TYPE).toOption("yes")
                                     .defaultValue(false)
                                     .build()
