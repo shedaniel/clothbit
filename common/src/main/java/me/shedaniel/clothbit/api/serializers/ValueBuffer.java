@@ -304,7 +304,7 @@ public class ValueBuffer implements ValueReader, ValueWriter {
             data.put(option.getName(), (TypedValue<Object>) copy(option.getType(), buffer.readAny(), ctx));
         }
         buffer.close();
-        stack.push(new TypedMap<>(new OptionedMapOptionType<>(options), data));
+        stack.push(new TypedMap<>(new OptionedMapOptionType((List<Option<?>>) (List<?>) options).cast(), data));
     }
     
     @Override

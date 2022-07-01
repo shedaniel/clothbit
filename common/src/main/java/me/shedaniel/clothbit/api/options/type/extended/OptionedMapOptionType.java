@@ -32,20 +32,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class OptionedMapOptionType<T> implements OptionType<Map<String, T>> {
-    private List<Option<T>> options;
-    private Map<String, Option<T>> optionsByName;
+public class OptionedMapOptionType implements OptionType<Map<String, ?>> {
+    private List<Option<?>> options;
+    private Map<String, Option<?>> optionsByName;
     
-    public OptionedMapOptionType(List<Option<T>> options) {
+    public OptionedMapOptionType(List<Option<?>> options) {
         this.options = options;
         this.optionsByName = new LinkedHashMap<>();
-        for (Option<T> option : this.options) {
+        for (Option<?> option : this.options) {
             this.optionsByName.put(option.getName(), option);
         }
     }
     
     @Override
-    public void write(Map<String, T> value, ValueWriter writer, OptionTypesContext ctx) {
+    public void write(Map<String, ?> value, ValueWriter writer, OptionTypesContext ctx) {
         writer.writeObject(AnyOptionType.instance(), ctx, objectWriter -> {
             for (Option<Object> child : (List<Option<Object>>) (List<? extends Option<?>>) this.options) {
                 child.withValue(((Map<String, Object>) value).getOrDefault(child.getName(), child.getDefaultValue()))
@@ -55,17 +55,17 @@ public class OptionedMapOptionType<T> implements OptionType<Map<String, T>> {
     }
     
     @Override
-    public Map<String, T> read(ValueReader reader) {
-        Map<String, T> value = new HashMap<>();
+    public Map<String, ?> read(ValueReader reader) {
+        Map<String, Object> value = new HashMap<>();
         reader.readObject((key, objectReader) -> {
-            Option<T> option = optionsByName.get(key);
+            Option<?> option = optionsByName.get(key);
             if (option != null) {
                 value.put(key, option.getType().read(objectReader));
                 return true;
             }
             return false;
         });
-        for (Map.Entry<String, Option<T>> entry : optionsByName.entrySet()) {
+        for (Map.Entry<String, Option<?>> entry : optionsByName.entrySet()) {
             if (!value.containsKey(entry.getKey())) {
                 value.put(entry.getKey(), entry.getValue().getDefaultValue());
             }
@@ -80,7 +80,7 @@ public class OptionedMapOptionType<T> implements OptionType<Map<String, T>> {
     
     @Override
     @Nullable
-    public Map<String, T> getDefaultValue() {
+    public Map<String, ?> getDefaultValue() {
         return new HashMap<>();
     }
 }

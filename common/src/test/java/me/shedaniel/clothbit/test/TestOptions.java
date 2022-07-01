@@ -28,6 +28,7 @@ import me.shedaniel.clothbit.api.annotations.IgnoreField;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.type.extended.OptionedMapOptionType;
+import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.api.serializers.format.Serializer;
 
@@ -67,17 +68,23 @@ public class TestOptions {
                     )
             );
             
+            System.out.println("Root Type");
             System.out.println(Serializer.serializeString(serializer, optionTypesContext, root.withValue(value)));
+            System.out.println();
+            System.out.println("Any Type");
+            System.out.println(Serializer.serializeString(serializer, optionTypesContext, AnyOptionType.instance().withValue(value)));
+            System.out.println();
         }
         {
             Serializer<Writer, Reader> serializer = Serializer.gson()
                     .flag(FormatFlag.indent("    "));
             OptionType<Apple> type = optionTypesContext.resolveType(Apple.class);
+            System.out.println("Apple");
             System.out.println(Serializer.serializeString(serializer, optionTypesContext, type.withValue(new Apple())));
+            System.out.println();
             JsonElement json = Serializer.serializeTo(Serializer.gsonElement(), optionTypesContext, type.withValue(new Apple()));
             json.getAsJsonObject().addProperty("age", 1234);
             Apple newApple = Serializer.deserializeTo(Serializer.gsonElement(), optionTypesContext, type, json);
-            System.out.println("adw");
         }
         {
             String data = "{\n" +
@@ -87,10 +94,10 @@ public class TestOptions {
                           "        \"yes\": \"adwad\",\n" +
                           "        \"klpadjwdoa\": false\n" +
                           "    },\n" +
-                          "    \"plsIgnore\": {\n" +
+                          "    \"plsIgnore\": [{\n" +
                           "        \"yes\": \"adwad\",\n" +
                           "        \"klpadjwdoa\": false\n" +
-                          "    }\n" +
+                          "    }]\n" +
                           "}";
             Serializer<Writer, Reader> serializer = Serializer.gson()
                     .flag(FormatFlag.indent("    "));

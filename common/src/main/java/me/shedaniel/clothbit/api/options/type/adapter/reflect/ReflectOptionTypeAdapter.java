@@ -87,8 +87,8 @@ public class ReflectOptionTypeAdapter implements OptionTypeAdapter {
                     options.add(Pair.of((Option<Object>) option.build(), field));
                 }
             }
-            List<Option<Object>> optionList = options.stream().map(Pair::getFirst).collect(Collectors.toList());
-            return Optional.of(new OptionedMapOptionType<>(optionList).map(values -> {
+            List<Option<?>> optionList = options.stream().map(Pair::getFirst).collect(Collectors.toList());
+            return Optional.of(new OptionedMapOptionType(optionList).map(values -> {
                 try {
                     R instance = (R) constructor.newInstance();
                     for (Pair<Option<Object>, Field> pair : options) {
