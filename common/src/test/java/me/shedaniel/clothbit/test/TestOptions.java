@@ -31,8 +31,11 @@ import me.shedaniel.clothbit.api.options.type.extended.OptionedMapOptionType;
 import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 import me.shedaniel.clothbit.api.serializers.format.FormatFlag;
 import me.shedaniel.clothbit.api.serializers.format.Serializer;
+import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
+import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.util.Map;
 
@@ -104,6 +107,26 @@ public class TestOptions {
             OptionType<Apple> type = optionTypesContext.resolveType(Apple.class);
             Apple apple = Serializer.deserializeString(serializer, optionTypesContext, type, data);
             System.out.println();
+        }
+        {
+            String data = "{\n" +
+                          "    \"age\": 10,\n" +
+                          "    \"maybe\": \"adwad\",\n" +
+                          "    \"customer\": {\n" +
+                          "        \"yes\": \"adwad\",\n" +
+                          "        \"klpadjwdoa\": false\n" +
+                          "    },\n" +
+                          "    \"plsIgnore\": [{\n" +
+                          "        \"yes\": \"adwad\",\n" +
+                          "        \"klpadjwdoa\": false\n" +
+                          "    }]\n" +
+                          "}";
+            JsonElement[] element = new JsonElement[1];
+            try (ValueReader reader = Serializer.gson().reader(new StringReader(data), optionTypesContext);
+                 ValueWriter writer = Serializer.gsonElement().writer(e -> element[0] = e, optionTypesContext)) {
+                reader.writeTo(writer, optionTypesContext);
+            }
+            System.out.println(element[0]);
         }
     }
     
