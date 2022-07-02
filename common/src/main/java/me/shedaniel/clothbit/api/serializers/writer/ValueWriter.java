@@ -108,8 +108,9 @@ public interface ValueWriter extends Closeable {
                         Object obj = typedObj == null ? null : typedObj.getValue();
                         OptionType<?> type = obj == null ? NullOptionType.instance() : typedObj.getType();
                         Option<?> option = type.toOption(key).build();
-                        ValueWriter optionWriter = writer.forOption(option);
-                        buffer.writeTo(optionWriter, ctx);
+                        try (ValueWriter optionWriter = writer.forOption(option)) {
+                            buffer.writeTo(optionWriter, ctx);
+                        }
                         return true;
                     });
                 });
@@ -129,7 +130,7 @@ public interface ValueWriter extends Closeable {
             Preconditions.checkArgument(aNull == null, "readNull did not return null!");
             writeNull();
         } else if (peek.isString()) writeString(reader.readString());
-        throw new IllegalStateException("Reading unknown type: " + peek);
+        else throw new IllegalStateException("Reading unknown type: " + peek);
     }
     
     default void writeAny(Object value, OptionTypesContext ctx) {
