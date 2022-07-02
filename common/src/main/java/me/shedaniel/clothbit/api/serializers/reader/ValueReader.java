@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
@@ -89,7 +89,7 @@ public interface ValueReader extends Closeable {
             case CHARACTER:
                 return readCharacter();
             case OBJECT:
-                Map<String, Object> dataMap = new HashMap<>();
+                Map<String, Object> dataMap = new LinkedHashMap<>();
                 readObject((key, valueReader) -> {
                     dataMap.put(key, valueReader.readAny());
                     return true;

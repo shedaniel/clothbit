@@ -102,7 +102,7 @@ public class ReflectOptionTypeAdapter implements OptionTypeAdapter {
                     throw new RuntimeException(e);
                 }
             }, instance -> {
-                Map<String, Object> values = new HashMap<>();
+                Map<String, Object> values = new LinkedHashMap<>();
                 try {
                     for (Pair<Option<Object>, Field> pair : options) {
                         values.put(pair.getFirst().getName(), pair.getSecond().get(instance));

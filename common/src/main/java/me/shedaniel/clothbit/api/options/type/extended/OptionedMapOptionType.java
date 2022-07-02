@@ -27,7 +27,6 @@ import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,7 @@ public class OptionedMapOptionType implements OptionType<Map<String, ?>> {
     
     @Override
     public Map<String, ?> read(ValueReader reader) {
-        Map<String, Object> value = new HashMap<>();
+        Map<String, Object> value = new LinkedHashMap<>();
         reader.readObject((key, objectReader) -> {
             Option<?> option = optionsByName.get(key);
             if (option != null) {
@@ -81,6 +80,6 @@ public class OptionedMapOptionType implements OptionType<Map<String, ?>> {
     @Override
     @Nullable
     public Map<String, ?> getDefaultValue() {
-        return new HashMap<>();
+        return new LinkedHashMap<>();
     }
 }

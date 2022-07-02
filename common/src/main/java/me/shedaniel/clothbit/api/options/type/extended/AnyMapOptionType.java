@@ -21,12 +21,11 @@ package me.shedaniel.clothbit.api.options.type.extended;
 
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
-import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AnyMapOptionType<T> implements OptionType<Map<String, T>> {
@@ -48,7 +47,7 @@ public class AnyMapOptionType<T> implements OptionType<Map<String, T>> {
     
     @Override
     public Map<String, T> read(ValueReader reader) {
-        Map<String, T> value = new HashMap<>();
+        Map<String, T> value = new LinkedHashMap<>();
         reader.readObject((key, objectReader) -> {
             value.put(key, this.valueType.read(objectReader));
             return true;
@@ -64,6 +63,6 @@ public class AnyMapOptionType<T> implements OptionType<Map<String, T>> {
     @Override
     @Nullable
     public Map<String, T> getDefaultValue() {
-        return new HashMap<>();
+        return new LinkedHashMap<>();
     }
 }
