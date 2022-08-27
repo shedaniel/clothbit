@@ -29,15 +29,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class CollectionOptionType<T> implements OptionType<Collection<T>> {
+public class ListOptionType<T> implements OptionType<List<T>> {
     private final OptionType<T> parent;
     
-    public CollectionOptionType(OptionType<T> parent) {
+    public ListOptionType(OptionType<T> parent) {
         this.parent = parent;
     }
     
     @Override
-    public void write(Collection<T> value, ValueWriter writer, OptionTypesContext ctx) {
+    public void write(List<T> value, ValueWriter writer, OptionTypesContext ctx) {
         if (value == null) {
             writer.writeNull();
         } else {
@@ -50,7 +50,7 @@ public class CollectionOptionType<T> implements OptionType<Collection<T>> {
     }
     
     @Override
-    public Collection<T> read(ValueReader reader) {
+    public List<T> read(ValueReader reader) {
         List<T> values = new ArrayList<>();
         reader.readArray(arrayReader -> {
             values.add(this.parent.read(arrayReader));
@@ -65,7 +65,7 @@ public class CollectionOptionType<T> implements OptionType<Collection<T>> {
     
     @Override
     @Nullable
-    public Collection<T> getDefaultValue() {
+    public List<T> getDefaultValue() {
         return new ArrayList<>();
     }
 }

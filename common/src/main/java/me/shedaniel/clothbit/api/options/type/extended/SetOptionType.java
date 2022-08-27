@@ -25,19 +25,18 @@ import me.shedaniel.clothbit.api.serializers.reader.ValueReader;
 import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-public class CollectionOptionType<T> implements OptionType<Collection<T>> {
+public class SetOptionType<T> implements OptionType<Set<T>> {
     private final OptionType<T> parent;
     
-    public CollectionOptionType(OptionType<T> parent) {
+    public SetOptionType(OptionType<T> parent) {
         this.parent = parent;
     }
     
     @Override
-    public void write(Collection<T> value, ValueWriter writer, OptionTypesContext ctx) {
+    public void write(Set<T> value, ValueWriter writer, OptionTypesContext ctx) {
         if (value == null) {
             writer.writeNull();
         } else {
@@ -50,8 +49,8 @@ public class CollectionOptionType<T> implements OptionType<Collection<T>> {
     }
     
     @Override
-    public Collection<T> read(ValueReader reader) {
-        List<T> values = new ArrayList<>();
+    public Set<T> read(ValueReader reader) {
+        Set<T> values = new LinkedHashSet<>();
         reader.readArray(arrayReader -> {
             values.add(this.parent.read(arrayReader));
         });
@@ -65,7 +64,7 @@ public class CollectionOptionType<T> implements OptionType<Collection<T>> {
     
     @Override
     @Nullable
-    public Collection<T> getDefaultValue() {
-        return new ArrayList<>();
+    public Set<T> getDefaultValue() {
+        return new LinkedHashSet<>();
     }
 }

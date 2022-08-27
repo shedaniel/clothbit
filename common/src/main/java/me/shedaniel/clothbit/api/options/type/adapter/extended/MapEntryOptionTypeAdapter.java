@@ -19,30 +19,38 @@
 
 package me.shedaniel.clothbit.api.options.type.adapter.extended;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.reflect.TypeToken;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
-import me.shedaniel.clothbit.api.options.type.extended.AnyMapOptionType;
+import me.shedaniel.clothbit.api.options.type.extended.OptionedMapOptionType;
 import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
-public class MapOptionTypeAdapter implements OptionTypeAdapter {
+public class MapEntryOptionTypeAdapter implements OptionTypeAdapter {
     @Override
     public <R> Optional<OptionType<? extends R>> forType(TypeToken<R> typeToken, OptionTypesContext ctx) {
         Class<? super R> rawType = typeToken.getRawType();
-        if (Map.class.isAssignableFrom(rawType)) {
+        
+        if (Map.Entry.class.isAssignableFrom(rawType)) {
             if (typeToken.getType() instanceof ParameterizedType) {
-                if (TypeToken.get(((ParameterizedType) typeToken.getType()).getActualTypeArguments()[0]).getRawType() != String.class) {
-                    throw new IllegalStateException("Maps only accept string as the key!");
-                } else {
-                    return Optional.of(new AnyMapOptionType<>(ctx.resolveType(((ParameterizedType) typeToken.getType()).getActualTypeArguments()[1])).cast());
-                }
+                return Optional.of(new OptionedMapOptionType(Arrays.asList(
+                        ctx.resolveType(((ParameterizedType) typeToken.getType()).getActualTypeArguments()[0]).toOption("key").build(),
+                        ctx.resolveType(((ParameterizedType) typeToken.getType()).getActualTypeArguments()[1]).toOption("value").build()
+                )).<Map.Entry<?, ?>>map(stringMap -> new AbstractMap.SimpleEntry<>(stringMap.get("key"), stringMap.get("value")),
+                        entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue())).cast());
             } else {
-                return Optional.of(new AnyMapOptionType<>(AnyOptionType.instance()).cast());
+                return Optional.of(new OptionedMapOptionType(Arrays.asList(
+                        AnyOptionType.instance().toOption("key").build(),
+                        AnyOptionType.instance().toOption("value").build()
+                )).<Map.Entry<?, ?>>map(stringMap -> new AbstractMap.SimpleEntry<>(stringMap.get("key"), stringMap.get("value")),
+                        entry -> ImmutableMap.of("key", entry.getKey(), "value", entry.getValue())).cast());
             }
         }
         

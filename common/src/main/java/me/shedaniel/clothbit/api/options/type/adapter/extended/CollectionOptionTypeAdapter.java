@@ -24,19 +24,49 @@ import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.type.extended.CollectionOptionType;
+import me.shedaniel.clothbit.api.options.type.extended.ListOptionType;
+import me.shedaniel.clothbit.api.options.type.extended.SetOptionType;
 import me.shedaniel.clothbit.api.options.type.simple.AnyOptionType;
+import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class CollectionOptionTypeAdapter implements OptionTypeAdapter {
     @Override
     public <R> Optional<OptionType<? extends R>> forType(TypeToken<R> typeToken, OptionTypesContext ctx) {
         Class<? super R> rawType = typeToken.getRawType();
-        if (Collection.class.isAssignableFrom(rawType)) {
-            return Optional.of(new CollectionOptionType<>(AnyOptionType.instance()).cast());
+        if (List.class.isAssignableFrom(rawType)) {
+            if (typeToken.getType() instanceof ParameterizedType) {
+                OptionType<Object> type = inner(typeToken, ctx);
+                return Optional.of(new ListOptionType<>(type).cast());
+            } else {
+                return Optional.of(new ListOptionType<>(AnyOptionType.instance()).cast());
+            }
+        } else if (Set.class.isAssignableFrom(rawType)) {
+            if (typeToken.getType() instanceof ParameterizedType) {
+                OptionType<Object> type = inner(typeToken, ctx);
+                return Optional.of(new ListOptionType<>(type).cast());
+            } else {
+                return Optional.of(new SetOptionType<>(AnyOptionType.instance()).cast());
+            }
+        } else if (Collection.class.isAssignableFrom(rawType)) {
+            if (typeToken.getType() instanceof ParameterizedType) {
+                OptionType<Object> type = inner(typeToken, ctx);
+                return Optional.of(new CollectionOptionType<>(type).cast());
+            } else {
+                return Optional.of(new CollectionOptionType<>(AnyOptionType.instance()).cast());
+            }
         }
         
         return Optional.empty();
+    }
+    
+    @Nullable
+    private static <R> OptionType<Object> inner(TypeToken<R> typeToken, OptionTypesContext ctx) {
+        return ctx.resolveType(((ParameterizedType) typeToken.getType()).getActualTypeArguments()[0]);
     }
 }

@@ -29,7 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AnyMapOptionType<T> implements OptionType<Map<String, T>> {
-    private OptionType<T> valueType;
+    private final OptionType<T> valueType;
     
     public AnyMapOptionType(OptionType<T> valueType) {
         this.valueType = valueType;

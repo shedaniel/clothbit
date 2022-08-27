@@ -20,6 +20,7 @@
 package me.shedaniel.clothbit.api.serializers.writer;
 
 import com.google.common.base.Preconditions;
+import com.google.gson.reflect.TypeToken;
 import me.shedaniel.clothbit.api.options.Option;
 import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;

@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 public class OptionedMapOptionType implements OptionType<Map<String, ?>> {
-    private List<Option<?>> options;
-    private Map<String, Option<?>> optionsByName;
+    private final List<Option<?>> options;
+    private final Map<String, Option<?>> optionsByName;
     
     public OptionedMapOptionType(List<Option<?>> options) {
         this.options = options;

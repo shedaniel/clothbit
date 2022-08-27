@@ -24,10 +24,7 @@ import me.shedaniel.clothbit.api.options.OptionType;
 import me.shedaniel.clothbit.api.options.OptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.OptionTypesContext;
 import me.shedaniel.clothbit.api.options.type.NullSafetyOptionType;
-import me.shedaniel.clothbit.api.options.type.adapter.extended.ArrayOptionTypeAdapter;
-import me.shedaniel.clothbit.api.options.type.adapter.extended.CollectionOptionTypeAdapter;
-import me.shedaniel.clothbit.api.options.type.adapter.extended.EnumOptionTypeAdapter;
-import me.shedaniel.clothbit.api.options.type.adapter.extended.MapOptionTypeAdapter;
+import me.shedaniel.clothbit.api.options.type.adapter.extended.*;
 import me.shedaniel.clothbit.api.options.type.adapter.reflect.ReflectOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.simple.AnyOptionTypeAdapter;
 import me.shedaniel.clothbit.api.options.type.adapter.simple.PrimitiveOptionTypeAdapter;
@@ -71,6 +68,8 @@ public class OptionTypesContextImpl implements OptionTypesContext {
         this.adapters.add(new NullSafetyAdapter(new ArrayOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new CollectionOptionTypeAdapter()));
         this.adapters.add(new NullSafetyAdapter(new MapOptionTypeAdapter()));
+        this.adapters.add(new NullSafetyAdapter(new MapEntryOptionTypeAdapter()));
+        this.adapters.add(new NullSafetyAdapter(new PairOptionTypeAdapter()));
         this.adapters.add(new AnyOptionTypeAdapter());
         this.adapters.add(new NullSafetyAdapter(new ReflectOptionTypeAdapter()));
     }

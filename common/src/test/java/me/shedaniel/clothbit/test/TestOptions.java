@@ -22,6 +22,9 @@ package me.shedaniel.clothbit.test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
+import com.mojang.datafixers.kinds.App;
+import com.mojang.datafixers.util.Pair;
 import me.shedaniel.clothbit.api.annotations.Comment;
 import me.shedaniel.clothbit.api.annotations.FieldName;
 import me.shedaniel.clothbit.api.annotations.IgnoreField;
@@ -37,26 +40,26 @@ import me.shedaniel.clothbit.api.serializers.writer.ValueWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
-import java.util.Map;
+import java.util.*;
 
 public class TestOptions {
     public static void main(String[] args) {
-        OptionTypesContext optionTypesContext = OptionTypesContext.defaultContext();
+        OptionTypesContext ctx = OptionTypesContext.defaultContext();
         {
             Serializer<Writer, Reader> serializer = Serializer.gson()
                     .flag(FormatFlag.indent("    "));
             OptionedMapOptionType root = new OptionedMapOptionType(ImmutableList.of(
-                    optionTypesContext.resolveType(Integer.TYPE).toOption("epic")
+                    ctx.resolveType(Integer.TYPE).toOption("epic")
                             .defaultValue(10)
                             .build(),
-                    optionTypesContext.resolveType(Boolean.TYPE).toOption("bruh")
+                    ctx.resolveType(Boolean.TYPE).toOption("bruh")
                             .defaultValue(false)
                             .build(),
-                    optionTypesContext.resolveType(String.class).toOption("idk")
+                    ctx.resolveType(String.class).toOption("idk")
                             .defaultValue("default")
                             .build(),
                     new OptionedMapOptionType(ImmutableList.of(
-                            optionTypesContext.resolveType(Boolean.TYPE).toOption("yes")
+                            ctx.resolveType(Boolean.TYPE).toOption("yes")
                                     .defaultValue(false)
                                     .build()
                     )).toOption("thing")
@@ -72,22 +75,22 @@ public class TestOptions {
             );
             
             System.out.println("Root Type");
-            System.out.println(Serializer.serializeString(serializer, optionTypesContext, root.withValue(value)));
+            System.out.println(Serializer.serializeString(serializer, ctx, root.withValue(value)));
             System.out.println();
             System.out.println("Any Type");
-            System.out.println(Serializer.serializeString(serializer, optionTypesContext, AnyOptionType.instance().withValue(value)));
+            System.out.println(Serializer.serializeString(serializer, ctx, AnyOptionType.instance().withValue(value)));
             System.out.println();
         }
         {
             Serializer<Writer, Reader> serializer = Serializer.gson()
                     .flag(FormatFlag.indent("    "));
-            OptionType<Apple> type = optionTypesContext.resolveType(Apple.class);
+            OptionType<Apple> type = ctx.resolveType(Apple.class);
             System.out.println("Apple");
-            System.out.println(Serializer.serializeString(serializer, optionTypesContext, type.withValue(new Apple())));
+            System.out.println(Serializer.serializeString(serializer, ctx, type.withValue(new Apple())));
             System.out.println();
-            JsonElement json = Serializer.serializeTo(Serializer.gsonElement(), optionTypesContext, type.withValue(new Apple()));
+            JsonElement json = Serializer.serializeTo(Serializer.gsonElement(), ctx, type.withValue(new Apple()));
             json.getAsJsonObject().addProperty("age", 1234);
-            Apple newApple = Serializer.deserializeTo(Serializer.gsonElement(), optionTypesContext, type, json);
+            Apple newApple = Serializer.deserializeTo(Serializer.gsonElement(), ctx, type, json);
         }
         {
             String data = "{\n" +
@@ -104,8 +107,8 @@ public class TestOptions {
                           "}";
             Serializer<Writer, Reader> serializer = Serializer.gson()
                     .flag(FormatFlag.indent("    "));
-            OptionType<Apple> type = optionTypesContext.resolveType(Apple.class);
-            Apple apple = Serializer.deserializeString(serializer, optionTypesContext, type, data);
+            OptionType<Apple> type = ctx.resolveType(Apple.class);
+            Apple apple = Serializer.deserializeString(serializer, ctx, type, data);
             System.out.println();
         }
         {
@@ -122,11 +125,22 @@ public class TestOptions {
                           "    }]\n" +
                           "}";
             JsonElement[] element = new JsonElement[1];
-            try (ValueReader reader = Serializer.gson().reader(new StringReader(data), optionTypesContext);
-                 ValueWriter writer = Serializer.gsonElement().writer(e -> element[0] = e, optionTypesContext)) {
-                reader.writeTo(writer, optionTypesContext);
+            try (ValueReader reader = Serializer.gson().reader(new StringReader(data), ctx);
+                 ValueWriter writer = Serializer.gsonElement().writer(e -> element[0] = e, ctx)) {
+                reader.writeTo(writer, ctx);
             }
             System.out.println(element[0]);
+        }
+        {
+            Serializer<Writer, Reader> serializer = Serializer.gson()
+                    .flag(FormatFlag.indent("    "));
+            OptionType<Pair<Apple, Customer>> type = ctx.resolveType(new TypeToken<Pair<Apple, Customer>>() {}.getType());
+            System.out.println("Apple");
+            System.out.println(Serializer.serializeString(serializer, ctx, type.withValue(new Pair<>(new Apple(), new Customer()))));
+            System.out.println();
+            JsonElement json = Serializer.serializeTo(Serializer.gsonElement(), ctx, type.withValue(new Pair<>(new Apple(), new Customer())));
+            json.getAsJsonObject().get("left").getAsJsonObject().addProperty("age", 1234);
+            Pair<Apple, Customer> newPair = Serializer.deserializeTo(Serializer.gsonElement(), ctx, type, json);
         }
     }
     
@@ -138,6 +152,7 @@ public class TestOptions {
         public String yes = "adwad";
         public Customer customer = new Customer();
         public Customer[] plsIgnore = new Customer[]{new Customer()};
+        public Set<Customer> customers = new LinkedHashSet<>(Arrays.asList(new Customer(), new Customer()));
     }
     
     public static class Customer {
